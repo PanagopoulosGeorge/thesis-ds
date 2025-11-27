@@ -15,6 +15,7 @@ from src.prompts.builder import BasePromptBuilder
 from src.simlp.client import SimLPClient
 from src.llm.provider_base import BaseLLMProvider
 from src.loop.logging_config import OrchestratorLogger
+from src.core.rule_memory import RuleMemory
 
 # Default logger (will be replaced if custom logger provided)
 logger = logging.getLogger(__name__)
@@ -43,12 +44,14 @@ class LoopOrchestrator:
         logger: Optional[logging.Logger] = None,
         verbose: bool = False,
         log_file: Optional[str] = None,
-        log_dir: Optional[str] = None
+        log_dir: Optional[str] = None,
+        rule_memory: Optional[RuleMemory] = None,
     ):
         self.prompt_builder = prompt_builder
         self.llm_provider = llm_provider
         self.simlp_client = simlp_client
         self.config = config
+        self.rule_memory = rule_memory if rule_memory is not None else RuleMemory()
         self.current_iteration = 0
         self.history: List[LoopState] = []
         
@@ -66,7 +69,11 @@ class LoopOrchestrator:
             )
             self.logger = self._logger_config.get_logger()
 
-    def _generate_initial_rules(self, activity: str) -> Tuple[str, LLMResponse]:
+    def _generate_initial_rules(
+        self,
+        activity: str,
+        prerequisite_rules: Optional[str] = None
+    ) -> Tuple[str, LLMResponse]:
         """
         Generate initial rules for an activity.
         
@@ -81,7 +88,10 @@ class LoopOrchestrator:
             ValueError: If response is empty
         """
         self.logger.debug(f"Building initial prompt for activity: {activity}")
-        prompt = self.prompt_builder.build_initial(activity)
+        prompt = self.prompt_builder.build_initial(
+            activity,
+            prerequisite_rules=prerequisite_rules
+        )
         
         self.logger.debug("Calling LLM to generate initial rules...")
         # Handle both message list and string prompts (for testing flexibility)
@@ -115,7 +125,8 @@ class LoopOrchestrator:
         activity: str,
         previous_rules: str,
         feedback: str,
-        attempt: int
+        attempt: int,
+        prerequisite_rules: Optional[str] = None
     ) -> Tuple[str, LLMResponse]:
         """
         Refine rules based on feedback.
@@ -140,7 +151,8 @@ class LoopOrchestrator:
             activity=activity,
             prev_rules=previous_rules,
             feedback=feedback,
-            attempt=attempt
+            attempt=attempt,
+            prerequisite_rules=prerequisite_rules
         )
         
         self.logger.debug("Calling LLM to generate refined rules...")
@@ -174,7 +186,12 @@ class LoopOrchestrator:
         
         return rules, response
 
-    def run(self, domain: str, activity: str) -> FinalResult:
+    def run(
+        self,
+        domain: str,
+        activity: str,
+        prerequisites: Optional[List[str]] = None
+    ) -> FinalResult:
         """
         Execute the feedback loop for a given activity.
         
@@ -201,9 +218,14 @@ class LoopOrchestrator:
         self.logger.info(f"  Convergence threshold: {self.config.convergence_threshold}")
         self.logger.info("=" * 80)
         
+        prerequisite_rules = self._get_prerequisite_rules(prerequisites)
+
         # Step 1: Generate initial rules
         self.logger.info("ITERATION 1: Generating initial rules...")
-        rules, response = self._generate_initial_rules(activity)
+        rules, response = self._generate_initial_rules(
+            activity,
+            prerequisite_rules=prerequisite_rules
+        )
         
         # Step 2: Evaluate initial rules
         self.logger.info("Evaluating initial rules...")
@@ -242,7 +264,8 @@ class LoopOrchestrator:
                 activity,
                 rules,
                 evaluation.feedback,
-                self.current_iteration
+                self.current_iteration,
+                prerequisite_rules=prerequisite_rules
             )
             
             # Evaluate refined rules
@@ -273,6 +296,12 @@ class LoopOrchestrator:
         
         # Step 6: Build final result
         result = self._build_final_result(reason)
+        self._persist_best_rules(
+            domain=domain,
+            activity=activity,
+            result=result,
+            prerequisites=prerequisites
+        )
         
         # Log completion summary
         self.logger.info("\n" + "=" * 80)
@@ -522,4 +551,227 @@ class LoopOrchestrator:
         )
         
         return result
+
+    def _get_prerequisite_rules(
+        self,
+        prerequisites: Optional[List[str]]
+    ) -> Optional[str]:
+        """
+        Retrieve formatted prerequisite rules from memory.
+
+        Args:
+            prerequisites: List of prerequisite fluent names.
+
+        Returns:
+            Formatted rules string or None if unavailable.
+        """
+        if not prerequisites:
+            return None
+
+        if not self.rule_memory:
+            return None
+
+        formatted = self.rule_memory.get_formatted_rules(
+            prerequisites,
+            include_description=True
+        )
+        return formatted or None
+
+    def _persist_best_rules(
+        self,
+        domain: str,
+        activity: str,
+        result: FinalResult,
+        prerequisites: Optional[List[str]]
+    ) -> None:
+        """
+        Persist the best rules for the activity into memory.
+
+        Args:
+            domain: Domain name (e.g., "MSA").
+            activity: Activity name.
+            result: FinalResult object containing best rules.
+            prerequisites: Prerequisite fluent names used in this run.
+        """
+        # if not self.rule_memory:
+        #     return
+
+        if not result.best_rules:
+            return
+
+        best_rules = result.best_rules[0]
+        if not best_rules or not best_rules.strip():
+            return
+
+        score = result.summary.get("best_score")
+        try:
+            description = self.prompt_builder.get_activity_description(activity)
+        except Exception:
+            description = ""
+
+        metadata = {
+            "domain": domain,
+            "prerequisites": prerequisites or [],
+            "converged": result.summary.get("converged"),
+            "best_iteration": result.summary.get("best_iteration"),
+        }
+
+        if self.rule_memory.contains(activity):
+            self.rule_memory.update(
+                name=activity,
+                description=description or None,
+                rules=best_rules,
+                score=score,
+                metadata=metadata
+            )
+            self.logger.debug(
+                "Updated memory entry for %s with score %.2f",
+                activity,
+                score if score is not None else -1
+            )
+        else:
+            self.rule_memory.add_entry(
+                name=activity,
+                description=description or "",
+                rules=best_rules,
+                score=score,
+                metadata=metadata
+            )
+            self.logger.debug(
+                "Stored new memory entry for %s with score %.2f",
+                activity,
+                score if score is not None else -1
+            )
+
+
+if __name__ == "__main__":
+    """Debug script for testing memory persistence."""
+    import os
+    from pathlib import Path
     
+    print("=" * 80)
+    print("ORCHESTRATOR MEMORY DEBUG")
+    print("=" * 80)
+    
+    # Setup
+    from src.prompts.builder import MSAPromptBuilder
+    from src.llm.provider_base import BaseLLMProvider
+    from src.simlp.client import SimLPClient
+    from src.core.rule_memory import RuleMemory
+    from src.core.models import LLMResponse, EvaluationResult
+    print("Set up components...Complete")
+    # Mock LLM Provider for testing
+    class MockLLMProvider(BaseLLMProvider):
+        def generate(self, prompt, **kwargs):
+            return LLMResponse(
+                request_id="mock-123",
+                provider="mock",
+                model="mock-model",
+                content="initiatedAt(gap(V)=true, T) :- happensAt(gap_start(V), T).",
+                tokens_used=100,
+                latency_ms=500.0,
+                finish_reason="stop",
+                raw={}
+            )
+        
+        def generate_from_messages(self, messages, **kwargs):
+            return self.generate("", **kwargs)
+    
+    # Mock SimLP Client
+    class MockSimLPClient:
+        def evaluate(self, domain, activity, generated_rules,
+                     generate_feedback=True):
+            return EvaluationResult(
+                rule_id=f"{domain}_{activity}",
+                score=0.97,
+                matches_reference=True,
+                feedback="Excellent rules!",
+                issues=[]
+            )
+    
+    # Create components
+    config = LoopConfig(
+        provider="mock",
+        objective="Test memory persistence",
+        max_iterations=3,
+        convergence_threshold=0.9,
+        batch_size=1,
+        retry_limit=3
+    )
+    
+    prompt_builder = MSAPromptBuilder()
+    llm_provider = MockLLMProvider()
+    simlp_client = MockSimLPClient()
+    
+    # Create memory and orchestrator
+    print("\n1. Creating RuleMemory and LoopOrchestrator...")
+    memory = RuleMemory()
+    print(f"   Initial memory size: {len(memory)}")
+    
+    orchestrator = LoopOrchestrator(
+        prompt_builder=prompt_builder,
+        llm_provider=llm_provider,
+        simlp_client=simlp_client,
+        config=config,
+        rule_memory=memory,
+        verbose=True
+    )
+    print("   ✓ Orchestrator created")
+    
+    # Run for 'gap' activity
+    print("\n2. Running orchestrator for 'gap' activity...")
+    result = orchestrator.run(
+        domain="MSA",
+        activity="gap",
+        prerequisites=None
+    )
+    
+    print("\n3. Checking result...")
+    print(f"   Best score: {result.summary['best_score']:.4f}")
+    print(f"   Converged: {result.summary['converged']}")
+    print(f"   Best rules: {result.best_rules[0][:80]}...")
+    
+    # Check memory BEFORE _persist_best_rules
+    print("\n4. Checking memory state...")
+    print(f"   Memory size: {len(memory)}")
+    print(f"   Contains 'gap': {memory.contains('gap')}")
+    
+    # if memory.contains('gap'):
+    #     entry = memory.get('gap')
+    #     print(f"   ✓ Entry found!")
+    #     print(f"     - Score: {entry.score}")
+    #     print(f"     - Domain: {entry.metadata.get('domain')}")
+    #     print(f"     - Prerequisites: {entry.metadata.get('prerequisites')}")
+    #     print(f"     - Rules length: {len(entry.rules)} chars")
+    # else:
+    #     print(f"   ✗ Entry NOT found - memory was not updated!")
+    #     print("\n5. Debugging _persist_best_rules...")
+        
+    #     # Manual call to debug
+    #     print(f"   Calling _persist_best_rules manually...")
+    #     print(f"     - domain: MSA")
+    #     print(f"     - activity: gap")
+    #     print(f"     - result.best_rules: {result.best_rules}")
+    #     print(f"     - result.summary['best_score']: {result.summary['best_score']}")
+        
+    #     orchestrator._persist_best_rules(
+    #         domain="MSA",
+    #         activity="gap",
+    #         result=result,
+    #         prerequisites=None
+    #     )
+        
+    #     print(f"\n   After manual call:")
+    #     print(f"   Memory size: {len(memory)}")
+    #     print(f"   Contains 'gap': {memory.contains('gap')}")
+        
+    #     if memory.contains('gap'):
+    #         print(f"   ✓ Manual persistence worked!")
+    #     else:
+    #         print(f"   ✗ Manual persistence also failed!")
+    
+    # print("\n" + "=" * 80)
+    # print("DEBUG COMPLETE")
+    # print("=" * 80)
+
+

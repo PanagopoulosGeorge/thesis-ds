@@ -118,6 +118,33 @@ class TestMSAPromptBuilder:
         assert "previous" in user_content.lower()
         assert "feedback" in user_content.lower()
 
+    def test_build_initial_includes_prerequisite_rules(self):
+        """Initial prompts include prerequisite rule blocks when provided."""
+        prerequisite_rules = "% === gap ===\ninitiatedAt(gap(V)=true, T) :- ..."
+        messages = self.builder.build_initial(
+            "trawling",
+            prerequisite_rules=prerequisite_rules
+        )
+
+        system_content = messages[0]["content"]
+        assert "Previously Learned Rules" in system_content
+        assert "gap" in system_content
+
+    def test_build_refinement_includes_prerequisite_rules(self):
+        """Refinement prompts include prerequisite rule blocks."""
+        prerequisite_rules = "% === lowSpeed ===\ninitiatedAt(lowSpeed(V)=true, T) :- ..."
+        messages = self.builder.build_refinement(
+            activity="trawling",
+            prev_rules="rules",
+            feedback="feedback",
+            attempt=2,
+            prerequisite_rules=prerequisite_rules
+        )
+
+        system_content = messages[0]["content"]
+        assert "Previously Learned Rules" in system_content
+        assert "lowSpeed" in system_content
+
     def test_activity_map_populated(self):
         """Test that activity map is correctly populated."""
         # Check that common MSA activities are available

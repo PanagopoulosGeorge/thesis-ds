@@ -1,0 +1,244 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.11, pytest-9.0.1, pluggy-1.6.0 -- /Users/gphome/Desktop/projects/thesis-ds/feedback-loop/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/gphome/Desktop/projects/thesis-ds/feedback-loop
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.11.0, asyncio-1.3.0, cov-7.0.0, langsmith-0.4.49
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 133 items
+
+tests/test_llm_provider.py::TestOpenAIProvider::test_openai_provider_initialization PASSED [  0%]
+tests/test_llm_provider.py::TestOpenAIProvider::test_generate_from_messages PASSED [  1%]
+tests/test_llm_provider.py::TestOpenAIProvider::test_generate_converts_prompt_to_messages PASSED [  2%]
+tests/test_llm_provider.py::TestOpenAIProvider::test_generate_handles_none_content PASSED [  3%]
+tests/test_llm_provider.py::TestProviderFactory::test_create_openai_provider PASSED [  3%]
+tests/test_llm_provider.py::TestProviderFactory::test_create_openai_case_insensitive PASSED [  4%]
+tests/test_llm_provider.py::TestProviderFactory::test_create_unknown_provider_raises_error PASSED [  5%]
+tests/test_llm_provider.py::TestProviderFactory::test_list_providers PASSED [  6%]
+tests/test_llm_provider.py::TestProviderFactory::test_register_custom_provider PASSED [  6%]
+tests/test_llm_provider.py::TestProviderFactory::test_factory_passes_kwargs_to_provider PASSED [  7%]
+tests/test_llm_provider.py::TestLLMProviderIntegration::test_end_to_end_openai_flow PASSED [  8%]
+tests/test_llm_provider.py::TestLLMProviderIntegration::test_multiple_messages_conversation PASSED [  9%]
+tests/test_loop_orchestrator.py::TestLoopOrchestratorInitialization::test_initialization_with_all_components PASSED [  9%]
+tests/test_loop_orchestrator.py::TestLoopOrchestratorInitialization::test_initialization_with_custom_config PASSED [ 10%]
+tests/test_loop_orchestrator.py::TestLoopOrchestratorInitialization::test_orchestrator_starts_with_empty_state PASSED [ 11%]
+tests/test_loop_orchestrator.py::TestImmediateConvergence::test_perfect_rules_on_first_try PASSED [ 12%]
+tests/test_loop_orchestrator.py::TestImmediateConvergence::test_high_similarity_triggers_convergence PASSED [ 12%]
+tests/test_loop_orchestrator.py::TestIterativeRefinement::test_convergence_after_two_iterations PASSED [ 13%]
+tests/test_loop_orchestrator.py::TestIterativeRefinement::test_convergence_after_multiple_iterations PASSED [ 14%]
+tests/test_loop_orchestrator.py::TestIterativeRefinement::test_feedback_passed_to_next_iteration PASSED [ 15%]
+tests/test_loop_orchestrator.py::TestMaximumIterations::test_stops_at_max_iterations PASSED [ 15%]
+tests/test_loop_orchestrator.py::TestMaximumIterations::test_returns_best_rules_when_not_converged PASSED [ 16%]
+tests/test_loop_orchestrator.py::TestErrorHandling::test_llm_generation_failure_raises_exception PASSED [ 17%]
+tests/test_loop_orchestrator.py::TestErrorHandling::test_simlp_evaluation_failure_raises_exception PASSED [ 18%]
+tests/test_loop_orchestrator.py::TestErrorHandling::test_empty_llm_response_handling PASSED [ 18%]
+tests/test_loop_orchestrator.py::TestErrorHandling::test_invalid_prolog_syntax_in_response PASSED [ 19%]
+tests/test_loop_orchestrator.py::TestStateManagement::test_iteration_counter_increments_correctly PASSED [ 20%]
+tests/test_loop_orchestrator.py::TestStateManagement::test_history_preserves_all_iterations PASSED [ 21%]
+tests/test_loop_orchestrator.py::TestStateManagement::test_summary_statistics_calculated_correctly PASSED [ 21%]
+tests/test_loop_orchestrator.py::TestEdgeCases::test_oscillating_scores PASSED [ 22%]
+tests/test_loop_orchestrator.py::TestEdgeCases::test_no_improvement_across_iterations PASSED [ 23%]
+tests/test_loop_orchestrator.py::TestEdgeCases::test_single_iteration_config PASSED [ 24%]
+tests/test_loop_orchestrator.py::TestConvergencePolicies::test_threshold_based_convergence PASSED [ 24%]
+tests/test_loop_orchestrator.py::TestConvergencePolicies::test_perfect_score_always_converges PASSED [ 25%]
+tests/test_loop_orchestrator.py::TestIntegrationScenarios::test_realistic_improvement_pattern PASSED [ 26%]
+tests/test_loop_orchestrator.py::TestIntegrationScenarios::test_multiple_activities_sequential PASSED [ 27%]
+tests/test_loop_orchestrator.py::TestMetricsAndMonitoring::test_token_usage_tracking PASSED [ 27%]
+tests/test_loop_orchestrator.py::TestMetricsAndMonitoring::test_latency_tracking PASSED [ 28%]
+tests/test_loop_orchestrator.py::TestMetricsAndMonitoring::test_improvement_rate_calculation PASSED [ 29%]
+tests/test_loop_orchestrator.py::TestMemoryIntegration::test_prerequisite_rules_injected_into_prompt PASSED [ 30%]
+tests/test_loop_orchestrator.py::TestMemoryIntegration::test_best_rules_persisted_to_memory FAILED [ 30%]
+tests/test_models.py::test_llm_request_defaults_and_validation PASSED    [ 31%]
+tests/test_models.py::test_llm_response_requires_non_negative_usage PASSED [ 32%]
+tests/test_models.py::test_evaluation_result_score_bounds PASSED         [ 33%]
+tests/test_models.py::test_loop_config_validation PASSED                 [ 33%]
+tests/test_models.py::test_loop_state_requires_non_negative_iteration PASSED [ 34%]
+tests/test_prompt_builder.py::TestMSAPromptBuilder::test_build_initial_gap PASSED [ 35%]
+tests/test_prompt_builder.py::TestMSAPromptBuilder::test_build_initial_highSpeedNearCoast PASSED [ 36%]
+tests/test_prompt_builder.py::TestMSAPromptBuilder::test_build_initial_invalid_activity PASSED [ 36%]
+tests/test_prompt_builder.py::TestMSAPromptBuilder::test_build_refinement PASSED [ 37%]
+tests/test_prompt_builder.py::TestMSAPromptBuilder::test_build_initial_includes_prerequisite_rules PASSED [ 38%]
+tests/test_prompt_builder.py::TestMSAPromptBuilder::test_build_refinement_includes_prerequisite_rules PASSED [ 39%]
+tests/test_prompt_builder.py::TestMSAPromptBuilder::test_activity_map_populated PASSED [ 39%]
+tests/test_prompt_builder.py::TestHARPromptBuilder::test_build_initial_leaving_object PASSED [ 40%]
+tests/test_prompt_builder.py::TestHARPromptBuilder::test_build_initial_moving PASSED [ 41%]
+tests/test_prompt_builder.py::TestHARPromptBuilder::test_build_initial_fighting PASSED [ 42%]
+tests/test_prompt_builder.py::TestHARPromptBuilder::test_build_refinement PASSED [ 42%]
+tests/test_prompt_builder.py::TestHARPromptBuilder::test_activity_map_populated PASSED [ 43%]
+tests/test_prompt_builder.py::TestBasePromptBuilder::test_cannot_instantiate PASSED [ 44%]
+tests/test_prompt_builder.py::TestPromptBuilderIntegration::test_msa_and_har_have_different_content PASSED [ 45%]
+tests/test_prompt_builder.py::TestPromptBuilderIntegration::test_refinement_includes_attempt_number PASSED [ 45%]
+tests/test_prompt_builder.py::TestPromptBuilderIntegration::test_system_message_consistency PASSED [ 46%]
+tests/test_prompt_builder.py::TestFluentTypeParameter::test_build_initial_with_simple_fluent_type PASSED [ 47%]
+tests/test_prompt_builder.py::TestFluentTypeParameter::test_build_initial_with_static_fluent_type PASSED [ 48%]
+tests/test_prompt_builder.py::TestFluentTypeParameter::test_build_initial_with_both_fluent_type PASSED [ 48%]
+tests/test_prompt_builder.py::TestFluentTypeParameter::test_build_refinement_with_fluent_type PASSED [ 49%]
+tests/test_prompt_builder.py::TestFluentTypeParameter::test_fluent_type_affects_message_length PASSED [ 50%]
+tests/test_prompt_builder.py::TestFluentTypeParameter::test_har_builder_supports_fluent_type PASSED [ 51%]
+tests/test_prompts.py::test_build_rtec_prompt_default_counts PASSED      [ 51%]
+tests/test_prompts.py::test_build_rtec_prompt_toggle_definitions PASSED  [ 52%]
+tests/test_prompts.py::test_build_rtec_prompt_accepts_additional_messages PASSED [ 53%]
+tests/test_rule_extraction.py::TestRuleExtraction::test_extract_single_code_block PASSED [ 54%]
+tests/test_rule_extraction.py::TestRuleExtraction::test_extract_multiple_code_blocks PASSED [ 54%]
+tests/test_rule_extraction.py::TestRuleExtraction::test_extract_code_block_with_pl_marker PASSED [ 55%]
+tests/test_rule_extraction.py::TestRuleExtraction::test_extract_code_block_without_language_marker PASSED [ 56%]
+tests/test_rule_extraction.py::TestRuleExtraction::test_fallback_to_pattern_matching PASSED [ 57%]
+tests/test_rule_extraction.py::TestRuleExtraction::test_extract_complex_multiline_rules PASSED [ 57%]
+tests/test_rule_extraction.py::TestRuleExtraction::test_extract_preserves_formatting PASSED [ 58%]
+tests/test_rule_extraction.py::TestRuleExtraction::test_empty_response_fallback PASSED [ 59%]
+tests/test_rule_extraction.py::TestRuleExtraction::test_multiple_code_blocks_concatenated PASSED [ 60%]
+tests/test_rule_extraction.py::TestRuleExtraction::test_code_block_with_comments PASSED [ 60%]
+tests/test_rule_memory.py::TestFluentEntry::test_create_fluent_entry_with_required_fields PASSED [ 61%]
+tests/test_rule_memory.py::TestFluentEntry::test_fluent_entry_has_optional_score PASSED [ 62%]
+tests/test_rule_memory.py::TestFluentEntry::test_fluent_entry_has_optional_metadata PASSED [ 63%]
+tests/test_rule_memory.py::TestFluentEntry::test_fluent_entry_has_created_at_timestamp PASSED [ 63%]
+tests/test_rule_memory.py::TestFluentEntry::test_fluent_entry_name_cannot_be_empty PASSED [ 64%]
+tests/test_rule_memory.py::TestFluentEntry::test_fluent_entry_rules_cannot_be_empty PASSED [ 65%]
+tests/test_rule_memory.py::TestFluentEntry::test_fluent_entry_description_can_be_empty PASSED [ 66%]
+tests/test_rule_memory.py::TestRuleMemory::test_create_empty_memory PASSED [ 66%]
+tests/test_rule_memory.py::TestRuleMemory::test_add_and_retrieve_entry PASSED [ 67%]
+tests/test_rule_memory.py::TestRuleMemory::test_add_entry_directly_with_kwargs PASSED [ 68%]
+tests/test_rule_memory.py::TestRuleMemory::test_get_nonexistent_entry_returns_none PASSED [ 69%]
+tests/test_rule_memory.py::TestRuleMemory::test_contains_checks_existence PASSED [ 69%]
+tests/test_rule_memory.py::TestRuleMemory::test_update_existing_entry PASSED [ 70%]
+tests/test_rule_memory.py::TestRuleMemory::test_update_nonexistent_raises_error PASSED [ 71%]
+tests/test_rule_memory.py::TestRuleMemory::test_remove_entry PASSED      [ 72%]
+tests/test_rule_memory.py::TestRuleMemory::test_remove_nonexistent_raises_error PASSED [ 72%]
+tests/test_rule_memory.py::TestRuleMemory::test_len_returns_entry_count PASSED [ 73%]
+tests/test_rule_memory.py::TestRuleMemory::test_list_all_fluent_names PASSED [ 74%]
+tests/test_rule_memory.py::TestRuleMemory::test_get_all_entries PASSED   [ 75%]
+tests/test_rule_memory.py::TestRuleMemoryRetrieval::test_get_rules_only PASSED [ 75%]
+tests/test_rule_memory.py::TestRuleMemoryRetrieval::test_get_rules_for_nonexistent_returns_none PASSED [ 76%]
+tests/test_rule_memory.py::TestRuleMemoryRetrieval::test_get_description_only PASSED [ 77%]
+tests/test_rule_memory.py::TestRuleMemoryRetrieval::test_get_formatted_rules_for_multiple PASSED [ 78%]
+tests/test_rule_memory.py::TestRuleMemoryRetrieval::test_get_formatted_rules_skips_missing PASSED [ 78%]
+tests/test_rule_memory.py::TestRuleMemorySerialization::test_export_to_dict PASSED [ 79%]
+tests/test_rule_memory.py::TestRuleMemorySerialization::test_import_from_dict PASSED [ 80%]
+tests/test_rule_memory.py::TestRuleMemorySerialization::test_clear_removes_all_entries PASSED [ 81%]
+tests/test_rule_memory.py::TestRuleMemoryExtensibility::test_metadata_preserved_on_retrieval PASSED [ 81%]
+tests/test_rule_memory.py::TestRuleMemoryExtensibility::test_can_filter_by_domain_using_metadata PASSED [ 82%]
+tests/test_rule_memory.py::TestRuleMemoryExtensibility::test_get_entries_by_names PASSED [ 83%]
+tests/test_simlp_client.py::TestSimLPClientInitialization::test_init_with_defaults PASSED [ 84%]
+tests/test_simlp_client.py::TestSimLPClientInitialization::test_init_with_custom_dirs PASSED [ 84%]
+tests/test_simlp_client.py::TestSimLPClientInitialization::test_init_creates_log_dir PASSED [ 85%]
+tests/test_simlp_client.py::TestSimLPClientEvaluate::test_evaluate_with_reference_rules PASSED [ 86%]
+tests/test_simlp_client.py::TestSimLPClientEvaluate::test_evaluate_without_feedback PASSED [ 87%]
+tests/test_simlp_client.py::TestSimLPClientEvaluate::test_evaluate_loads_reference_from_file PASSED [ 87%]
+tests/test_simlp_client.py::TestSimLPClientEvaluate::test_evaluate_raises_error_without_reference PASSED [ 88%]
+tests/test_simlp_client.py::TestSimLPClientEvaluate::test_evaluate_handles_simlp_errors PASSED [ 89%]
+tests/test_simlp_client.py::TestSimLPClientEvaluate::test_evaluate_handles_none_result PASSED [ 90%]
+tests/test_simlp_client.py::TestSimLPClientEvaluate::test_evaluate_similarity_thresholds PASSED [ 90%]
+tests/test_simlp_client.py::TestSimLPClientReferenceLoading::test_load_reference_rules_from_pl_file PASSED [ 91%]
+tests/test_simlp_client.py::TestSimLPClientReferenceLoading::test_load_reference_rules_from_prolog_file PASSED [ 92%]
+tests/test_simlp_client.py::TestSimLPClientReferenceLoading::test_load_reference_rules_not_found PASSED [ 93%]
+tests/test_simlp_client.py::TestSimLPClientFeedbackFormatting::test_format_feedback_empty PASSED [ 93%]
+tests/test_simlp_client.py::TestSimLPClientFeedbackFormatting::test_format_feedback_with_data PASSED [ 94%]
+tests/test_simlp_client.py::TestSimLPClientFeedbackFormatting::test_format_feedback_multiple_concepts PASSED [ 95%]
+tests/test_simlp_client.py::TestSimLPClientIssueExtraction::test_extract_issues_high_similarity PASSED [ 96%]
+tests/test_simlp_client.py::TestSimLPClientIssueExtraction::test_extract_issues_moderate_similarity PASSED [ 96%]
+tests/test_simlp_client.py::TestSimLPClientIssueExtraction::test_extract_issues_low_similarity PASSED [ 97%]
+tests/test_simlp_client.py::TestSimLPClientIssueExtraction::test_extract_issues_from_feedback_data PASSED [ 98%]
+tests/test_simlp_client.py::TestSimLPClientIntegration::test_end_to_end_evaluation_flow PASSED [ 99%]
+tests/test_simlp_client.py::TestSimLPClientIntegration::test_perfect_match_scenario PASSED [100%]
+
+=================================== FAILURES ===================================
+__________ TestMemoryIntegration.test_best_rules_persisted_to_memory ___________
+
+self = <test_loop_orchestrator.TestMemoryIntegration object at 0x10dff57f0>
+mock_prompt_builder = <Mock id='4531444896'>
+mock_llm_provider = <Mock id='4531444704'>
+mock_simlp_client = <Mock id='4531444512'>
+basic_config = LoopConfig(provider='openai', objective='Generate RTEC rules for activity recognition', max_iterations=5, convergence_threshold=0.9, batch_size=1, retry_limit=3)
+
+    def test_best_rules_persisted_to_memory(
+        self,
+        mock_prompt_builder,
+        mock_llm_provider,
+        mock_simlp_client,
+        basic_config
+    ):
+        """Final best rules are stored in memory for future runs."""
+        rule_memory = RuleMemory()
+    
+        orchestrator = LoopOrchestrator(
+            prompt_builder=mock_prompt_builder,
+            llm_provider=mock_llm_provider,
+            simlp_client=mock_simlp_client,
+            config=basic_config,
+            rule_memory=rule_memory
+        )
+    
+        mock_prompt_builder.get_activity_description.return_value = (
+            "Gap description."
+        )
+        mock_llm_provider.generate.return_value = create_llm_response(
+            content="initiatedAt(gap(V)=true, T) :- happensAt(gap_start(V), T)."
+        )
+        mock_simlp_client.evaluate.return_value = create_evaluation(
+            score=0.97,
+            matches=True,
+            feedback="Excellent"
+        )
+    
+        orchestrator.run(domain="MSA", activity="gap")
+    
+        entry = rule_memory.get("gap")
+>       assert entry is not None
+E       assert None is not None
+
+tests/test_loop_orchestrator.py:1009: AssertionError
+----------------------------- Captured stdout call -----------------------------
+INFO     | ================================================================================
+INFO     | Starting feedback loop for MSA/gap
+INFO     |   Max iterations: 5
+INFO     |   Convergence threshold: 0.9
+INFO     | ================================================================================
+INFO     | ITERATION 1: Generating initial rules...
+INFO     | Evaluating initial rules...
+INFO     | Iteration 1 complete: score=0.9700, converged=True
+INFO     | 
+================================================================================
+INFO     | FEEDBACK LOOP COMPLETED
+INFO     | ================================================================================
+INFO     | Reason: Converged (score=0.97 >= 0.9)
+INFO     | Converged: True
+INFO     | Iterations used: 1
+INFO     | Final score: 0.9700
+INFO     | Best score: 0.9700
+INFO     | Improvement: 0.0000
+INFO     | Total tokens: 100
+INFO     | Average latency: 500.00 ms
+INFO     | ================================================================================
+================================ tests coverage ================================
+______________ coverage: platform darwin, python 3.12.11-final-0 _______________
+
+Name                          Stmts   Miss  Cover   Missing
+-----------------------------------------------------------
+src/core/__init__.py              3      0   100%
+src/core/models.py               51      0   100%
+src/core/rule_memory.py          91      3    97%   42, 50, 374
+src/llm/__init__.py               4      0   100%
+src/llm/factory.py               20      0   100%
+src/llm/provider_base.py         21      2    90%   41, 68
+src/llm/provider_openai.py       22      0   100%
+src/loop/__init__.py              3      0   100%
+src/loop/logging_config.py       86     36    58%   51, 59, 97, 120-122, 126-130, 134, 138-140, 144-147, 151-156, 160-167, 171-173, 198-206
+src/loop/orchestrator.py        181     15    92%   60-61, 99, 161, 179-180, 293, 396, 572, 600, 604, 609-610, 620-627
+src/prompts/builder.py          122      5    96%   55, 69, 82, 294, 389
+src/prompts/har_domain.py         6      0   100%
+src/prompts/har_examples.py       1      0   100%
+src/prompts/har_requests.py       1      0   100%
+src/prompts/msa_domain.py         4      0   100%
+src/prompts/msa_examples.py       2      0   100%
+src/prompts/msa_requests.py       1      0   100%
+src/prompts/rtec_base.py         19      0   100%
+src/simlp/__init__.py             2      0   100%
+src/simlp/client.py              75      1    99%   212
+src/simlp/mock.py                 0      0   100%
+-----------------------------------------------------------
+TOTAL                           715     62    91%
+Coverage HTML written to dir htmlcov
+=========================== short test summary info ============================
+FAILED tests/test_loop_orchestrator.py::TestMemoryIntegration::test_best_rules_persisted_to_memory
+======================== 1 failed, 132 passed in 0.98s =========================

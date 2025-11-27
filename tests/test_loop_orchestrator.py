@@ -21,6 +21,7 @@ from src.core.models import (
     LoopState,
     FinalResult
 )
+from src.core.rule_memory import RuleMemory
 from src.loop.orchestrator import LoopOrchestrator
 
 
@@ -37,6 +38,7 @@ def mock_prompt_builder():
     builder.build_refinement.return_value = (
         "Refinement prompt with feedback"
     )
+    builder.get_activity_description.return_value = "Mock activity description."
     return builder
 
 
@@ -83,7 +85,8 @@ def orchestrator(
         prompt_builder=mock_prompt_builder,
         llm_provider=mock_llm_provider,
         simlp_client=mock_simlp_client,
-        config=basic_config
+        config=basic_config,
+        rule_memory=RuleMemory(),
     )
 
 
@@ -919,3 +922,92 @@ class TestMetricsAndMonitoring:
         # Improvement from 0.5 to 0.95 = 0.45
         assert result.summary['improvement'] == 0.45
         assert result.summary['improvement_rate'] == 0.45 / 3  # 3 refinements
+
+
+class TestMemoryIntegration:
+    """Tests for RuleMemory integration within the orchestrator."""
+
+    def test_prerequisite_rules_injected_into_prompt(
+        self,
+        mock_prompt_builder,
+        mock_llm_provider,
+        mock_simlp_client,
+        basic_config
+    ):
+        """Prerequisite rules from memory are injected per RULE_MEMORY sequence."""
+        rule_memory = RuleMemory()
+        rule_memory.add_entry(
+            name="gap",
+            description="Gap description.",
+            rules="initiatedAt(gap(Vessel)=nearPort, T) :- happensAt(gap_start(Vessel), T)."
+        )
+
+        orchestrator = LoopOrchestrator(
+            prompt_builder=mock_prompt_builder,
+            llm_provider=mock_llm_provider,
+            simlp_client=mock_simlp_client,
+            config=basic_config,
+            rule_memory=rule_memory
+        )
+
+        mock_prompt_builder.reset_mock()
+        mock_prompt_builder.get_activity_description.return_value = (
+            "Composite activity description."
+        )
+        mock_llm_provider.generate.return_value = create_llm_response(
+            content="initiatedAt(rendezVous(V)=true, T) :- ..."
+        )
+        mock_simlp_client.evaluate.return_value = create_evaluation(
+            score=0.95,
+            matches=True,
+            feedback="Good job"
+        )
+
+        orchestrator.run(
+            domain="MSA",
+            activity="rendezVous",
+            prerequisites=["gap"]
+        )
+
+        initial_kwargs = mock_prompt_builder.build_initial.call_args.kwargs
+        assert "prerequisite_rules" in initial_kwargs
+        assert "gap" in initial_kwargs["prerequisite_rules"]
+
+    def test_best_rules_persisted_to_memory(
+        self,
+        mock_prompt_builder,
+        mock_llm_provider,
+        mock_simlp_client,
+        basic_config
+    ):
+        """Final best rules are stored in memory for future runs."""
+        rule_memory = RuleMemory()
+
+        orchestrator = LoopOrchestrator(
+            prompt_builder=mock_prompt_builder,
+            llm_provider=mock_llm_provider,
+            simlp_client=mock_simlp_client,
+            config=basic_config,
+            rule_memory=rule_memory
+        )
+
+        mock_prompt_builder.get_activity_description.return_value = (
+            "Gap description."
+        )
+        mock_llm_provider.generate.return_value = create_llm_response(
+            content="initiatedAt(gap(V)=true, T) :- happensAt(gap_start(V), T)."
+        )
+        mock_simlp_client.evaluate.return_value = create_evaluation(
+            score=0.97,
+            matches=True,
+            feedback="Excellent"
+        )
+
+        orchestrator.run(domain="MSA", activity="gap")
+
+        entry = rule_memory.get("gap")
+        assert entry is not None
+        assert "initiatedAt" in entry.rules
+        assert entry.score == 0.97
+        assert entry.metadata["domain"] == "MSA"
+        assert entry.metadata["prerequisites"] == []

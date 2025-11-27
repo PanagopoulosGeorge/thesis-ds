@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from src.prompts.har_domain import (
     system_HAR,
@@ -105,7 +105,8 @@ class BasePromptBuilder(ABC):
     def build_initial(
         self,
         activity: str,
-        fluent_type: str = "both"
+        fluent_type: str = "both",
+        prerequisite_rules: Optional[str] = None
     ) -> List[Dict[str, str]]:
         """Build initial prompt for generating RTEC rules.
         
@@ -135,6 +136,11 @@ class BasePromptBuilder(ABC):
         # Add examples
         system_parts.append("\n=== Examples ===\n")
         system_parts.append(self._format_examples(fluent_type))
+
+        # Inject prerequisite rules if provided
+        if prerequisite_rules:
+            system_parts.append("\n=== Previously Learned Rules ===\n")
+            system_parts.append(prerequisite_rules)
         
         # Combine into single system message
         system_content = "\n\n".join(system_parts)
@@ -158,7 +164,8 @@ class BasePromptBuilder(ABC):
         prev_rules: str,
         feedback: str,
         attempt: int,
-        fluent_type: str = "both"
+        fluent_type: str = "both",
+        prerequisite_rules: Optional[str] = None
     ) -> List[Dict[str, str]]:
         """Build refinement prompt for improving RTEC rules based on feedback.
         
@@ -191,6 +198,11 @@ class BasePromptBuilder(ABC):
         # Add examples
         system_parts.append("\n=== Examples ===\n")
         system_parts.append(self._format_examples(fluent_type))
+
+        # Inject prerequisite rules if provided
+        if prerequisite_rules:
+            system_parts.append("\n=== Previously Learned Rules ===\n")
+            system_parts.append(prerequisite_rules)
         
         # Combine into single system message
         system_content = "\n\n".join(system_parts)
