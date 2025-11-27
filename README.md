@@ -24,7 +24,7 @@ It implements an automated feedback loop that analyzes generated rules, compares
 - Experiment orchestration and logging
 - Clean modular architecture
 
-## 🧩 Architecture Overview
+## 🧩 Architecture Overview (without memory)
 
 ```mermaid
 graph LR
@@ -37,7 +37,8 @@ graph LR
     G --> B
     F -->|Yes| H[Final Rule Set]
 ```
-
+## 🧩 Architecture Overview (added memory)
+Regarding the architecture you can refer to [Architecture](ARCHITECTURE.md)
 ## 🚀 Quick Start
 
 ### Installation
