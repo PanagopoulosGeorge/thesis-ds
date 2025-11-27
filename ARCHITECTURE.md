@@ -4,14 +4,49 @@ This document describes the architecture of the feedback loop system for iterati
 
 ## Key Components
 
-1. **LoopOrchestrator**: Main controller implementing the feedback loop algorithm
-2. **Prompt Builders**: Domain-specific prompt construction (MSA, HAR)
-3. **LLM Providers**: Abstraction layer for LLM APIs (OpenAI, etc.)
-4. **SimLP Client**: Rule evaluation and feedback generation
-5. **Logging System**: Comprehensive logging with file output
-6. **Data Models**: Pydantic models for type safety and validation
+1. **Memory Module (RuleKB)**: External memory system for storing and retrieving learned fluents
+2. **Dependency Graph**: Static mapping of prerequisite fluents for each activity
+3. **LoopOrchestrator**: Main controller implementing the feedback loop algorithm with memory integration
+4. **Prompt Builders**: Domain-specific prompt construction with context injection (MSA, HAR)
+5. **LLM Providers**: Abstraction layer for LLM APIs (OpenAI, etc.)
+6. **SimLP Client**: Rule evaluation and feedback generation
+7. **Logging System**: Comprehensive logging with file output
+8. **Data Models**: Pydantic models for type safety and validation
+
+> 📖 **For detailed Memory Module architecture**, see [docs/MEMORY_MODULE.md](./docs/MEMORY_MODULE.md)
 
 # Component Interactions
+
+## 0. **Memory Module Integration**
+
+```mermaid
+sequenceDiagram
+    participant ORCH as LoopOrchestrator
+    participant DEP as Dependency Graph
+    participant RKB as RuleKB
+    participant PB as PromptBuilder
+    participant LLM as LLM Provider
+    
+    Note over ORCH: Starting generation for "rendezVous"
+    
+    ORCH->>DEP: get_dependencies("rendezVous")
+    DEP-->>ORCH: ["gap", "lowSpeed", "stopped", "withinArea"]
+    
+    ORCH->>RKB: get_fluents(["gap", "lowSpeed", ...])
+    RKB-->>ORCH: {gap: "rules...", lowSpeed: "rules...", ...}
+    
+    ORCH->>PB: build_initial("rendezVous", prerequisite_fluents)
+    PB->>PB: Inject fluent context into system message
+    PB-->>ORCH: [system_msg, user_msg]
+    
+    ORCH->>LLM: generate_from_messages(messages)
+    LLM-->>ORCH: Generated rules for rendezVous
+    
+    ORCH->>ORCH: Extract rules from response
+    ORCH->>RKB: add_fluent("rendezVous", rules)
+    
+    Note over RKB: Memory now contains:<br/>gap, lowSpeed, stopped,<br/>withinArea, rendezVous
+```
 
 ## 1. **Prompt Building Pipeline**
 
@@ -61,13 +96,19 @@ sequenceDiagram
     Provider-->>App: LLMResponse
 ```
 
-## 3. **Feedback Loop Cycle**
+## 3. **Feedback Loop Cycle (with Memory Module)**
 
 ```mermaid
 flowchart TD
     Start([Start Loop]) --> InitLog[Initialize Logger<br/>+ LoopState]
     InitLog --> LogStart[Log: Starting feedback loop]
-    LogStart --> BuildPrompt[Build Initial Prompt<br/>from Builder]
+    LogStart --> QueryDeps[Query Dependency Graph<br/>for prerequisites]
+    QueryDeps --> CheckMem{Prerequisites<br/>in RuleKB?}
+    CheckMem -->|Yes| RetrieveFlue[Retrieve Fluent<br/>Definitions from RuleKB]
+    CheckMem -->|No| BuildPrompt[Build Initial Prompt]
+    RetrieveFlue --> InjectCtx[Inject Fluent Context<br/>into Prompt]
+    InjectCtx --> BuildPrompt
+    
     BuildPrompt --> LogGenerate[Log: Calling LLM]
     LogGenerate --> CallLLM[Call LLM Provider<br/>generate_from_messages]
     CallLLM --> LogResponse[Log: Tokens + Latency]
@@ -85,10 +126,17 @@ flowchart TD
     LogRefine --> BuildRefinement[Build Refinement Prompt<br/>with prev_rules + feedback]
     
     BuildRefinement --> LogGenerate
-    Converged --> LogFinal
+    Converged --> StoreFlue[Store New Fluent<br/>in RuleKB]
+    StoreFlue --> LogFinal
     LogFinal --> Stop[Return Final Results]
     
     Stop --> Results([FinalResult with<br/>best rules & evaluations])
+    
+    style QueryDeps fill:#fff3e0
+    style CheckMem fill:#fff3e0
+    style RetrieveFlue fill:#e1f5ff
+    style InjectCtx fill:#e1f5ff
+    style StoreFlue fill:#e1f5ff
 ```
 
 **Usage Examples:**
@@ -164,9 +212,11 @@ def run(domain: str, activity: str) -> FinalResult:
 feedback-loop/
 ├── src/
 │   ├── core/
-│   │   └── models.py          # Pydantic models for all data structures
+│   │   ├── models.py          # Pydantic models for all data structures
+│   │   ├── rule_kb.py         # 🆕 Memory Module (RuleKB) implementation
+│   │   └── dependencies.py    # 🆕 Dependency graph definitions
 │   ├── prompts/
-│   │   ├── builder.py         # Prompt builder classes
+│   │   ├── builder.py         # Prompt builder classes (with context injection)
 │   │   ├── rtec_base.py       # Core RTEC prompts
 │   │   ├── msa_domain.py      # MSA domain knowledge
 │   │   ├── msa_examples.py    # MSA examples
@@ -179,7 +229,7 @@ feedback-loop/
 │   │   ├── provider_openai.py # OpenAI implementation
 │   │   └── factory.py         # Provider factory
 │   ├── loop/
-│   │   ├── orchestrator.py    # Feedback loop orchestration
+│   │   ├── orchestrator.py    # Feedback loop orchestration (with memory integration)
 │   │   └── logging_config.py  # Logging configuration
 │   ├── simlp/
 │   │   └── client.py          # SimLP evaluation client
@@ -189,10 +239,20 @@ feedback-loop/
 │   ├── test_models.py         # Core model tests
 │   ├── test_prompts.py        # RTEC prompt tests
 │   ├── test_loop_orchestrator.py # Orchestrator tests (27 tests)
-│   └── test_llm_provider.py   # Provider tests
+│   ├── test_llm_provider.py   # Provider tests
+│   ├── test_rule_kb.py        # 🆕 Memory Module tests
+│   └── test_memory_integration.py # 🆕 End-to-end memory tests
 ├── notebooks/
 │   └── feedback_loop_usage.ipynb # Tutorial notebook
 ├── docs/
+│   ├── MEMORY_MODULE.md       # 🆕 Memory Module architecture and design
 │   └── LOGGING_GUIDE.md       # Comprehensive logging guide
 └── logs/                      # Auto-generated log files
 ```
+
+**🆕 New Components for Memory Module:**
+- `src/core/rule_kb.py`: RuleKB class for storing/retrieving learned fluents
+- `src/core/dependencies.py`: Static dependency graphs (MSA_DEPENDENCIES, HAR_DEPENDENCIES)
+- `docs/MEMORY_MODULE.md`: Complete design document and implementation guide
+- `tests/test_rule_kb.py`: Unit tests for RuleKB operations
+- `tests/test_memory_integration.py`: Integration tests for memory-enabled generation
