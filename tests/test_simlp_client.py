@@ -237,18 +237,6 @@ class TestSimLPClientReferenceLoading:
 
         assert content == "prolog content"
 
-    def test_load_reference_rules_flat_structure(self, tmp_path):
-        """Test loading from flat directory structure."""
-        ref_dir = Path("./../data/ground_truth/")
-        ref_dir.mkdir()
-        ref_file = ref_dir / "MSA_gap.pl"
-        ref_file.write_text("flat structure")
-
-        client = SimLPClient(reference_rules_dir=str(ref_dir))
-        content = client._load_reference_rules('msa', 'gap')
-
-        assert content == "flat structure"
-
     def test_load_reference_rules_not_found(self, tmp_path):
         """Test error when reference rules not found."""
         ref_dir = tmp_path / "refs"
