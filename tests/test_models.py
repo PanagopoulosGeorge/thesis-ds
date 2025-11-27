@@ -127,6 +127,7 @@ def test_loop_state_requires_non_negative_iteration():
     state = LoopState(
         iteration=1,
         pending_requests=[],
+        rules = "test rules",
         completed_requests=[response],
         evaluations=[evaluation],
         converged=False,
