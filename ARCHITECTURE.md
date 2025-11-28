@@ -12,77 +12,52 @@ This document describes the architecture of the feedback loop system for iterati
 7. **Logging System**: Comprehensive logging with file output
 8. **Data Models**: Pydantic models for type safety and validation
 
-> 📖 **For detailed Memory Module architecture**, see [docs/MEMORY_MODULE.md](./docs/MEMORY_MODULE.md)
 
+
+# Rule Memory Module Documentation
+
+## Overview
+
+The **RuleMemory** module (`src/core/rule_memory.py`) provides a persistent key-value store for RTEC fluent rules. It serves as the memory system for the stateless LLM, storing previously learned fluent definitions that can be retrieved and injected into future prompts.
+
+### Purpose
+
+In an LLM-based RTEC rule generation system:
+- **LLMs are stateless** — They don't remember previous interactions
+- **RTEC activities are hierarchical** — Composite fluents depend on simpler ones
+- **Context is critical** — The LLM needs access to prerequisite fluent definitions
+
+RuleMemory solves this by providing **external memory** that persists across LLM calls.
 # Component Interactions
 
-## 1. **Prompt Building Pipeline**
-
 ```mermaid
 sequenceDiagram
-    participant User
-    participant Builder as PromptBuilder
-    participant RTEC as RTEC Prompts
-    participant Domain as Domain Prompts
-    participant Examples as Examples
+    participant O as LoopOrchestrator
+    participant M as RuleMemory
+    participant PB as PromptBuilder
+    participant LLM as LLM Provider
+    participant E as Evaluator
     
-    User->>Builder: build_initial("gap")
-    Builder->>RTEC: Load base prompts
-    RTEC-->>Builder: system_1, system_2, system_3
-    Builder->>RTEC: Load fluent definitions
-    RTEC-->>Builder: simple/static definitions
-    Builder->>Domain: Load domain-specific
-    Domain-->>Builder: MSA events, fluents, BK
-    Builder->>Examples: Load examples
-    Examples-->>Builder: Simple & static examples
-    Builder->>Examples: get_examples("both")
-    Examples-->>Builder: Combined examples
-    Builder->>Builder: Format all into messages
-    Builder-->>User: [system_msg, user_msg]
-```
-
-## 2. **LLM Provider Flow**
-
-```mermaid
-sequenceDiagram
-    participant App as Application
-    participant Factory as ProviderFactory
-    participant Provider as OpenAIProvider
-    participant API as OpenAI API
+    Note over O: Generate "gap" (simple fluent)
+    O->>PB: build_prompt("gap", prerequisites=[])
+    PB->>LLM: Generate gap rules
+    LLM-->>O: Generated rules
+    O->>E: Evaluate rules
+    E-->>O: score=0.95
+    O->>M: add_entry("gap", rules, score=0.95)
     
-    App->>Factory: create("openai", api_key)
-    Factory->>Provider: __init__(api_key)
-    Factory-->>App: provider instance
+    Note over O: Generate "rendezVous" (composite fluent)
+    O->>M: get_formatted_rules(["gap", "lowSpeed", "stopped"])
+    M-->>O: Formatted prerequisite rules
+    O->>PB: build_prompt("rendezVous", prerequisites)
+    PB->>PB: Inject prerequisites into system prompt
+    PB->>LLM: Generate rendezVous rules with context
+    LLM-->>O: Generated rules (uses prerequisites)
+    O->>E: Evaluate rules
+    E-->>O: score=0.92
+    O->>M: add_entry("rendezVous", rules, score=0.92)
     
-    App->>Provider: generate_from_messages(msgs)
-    Provider->>Provider: Start latency timer
-    Provider->>API: chat.completions.create()
-    API-->>Provider: completion response
-    Provider->>Provider: End latency timer
-    Provider->>Provider: Extract content & tokens
-    Provider->>Provider: _create_response()
-    Provider-->>App: LLMResponse
-```
-
-**Usage Examples:**
-```python
-# Verbose logging with file output
-orchestrator = LoopOrchestrator(
-    ...,
-    verbose=True,
-    log_dir="./logs"
-)
-
-# Custom log file
-orchestrator = LoopOrchestrator(
-    ...,
-    log_file="./experiments/run_001.log"
-)
-
-# Custom logger
-from src.loop.logging_config import setup_orchestrator_logging
-logger = setup_orchestrator_logging(verbose=True)
-orchestrator = LoopOrchestrator(..., logger=logger)
+    Note over M: Memory now contains:<br/>gap, lowSpeed, stopped, rendezVous
 ```
 
 ## 5. **Orchestrator Algorithm**
@@ -104,16 +79,6 @@ def run(domain: str, activity: str) -> FinalResult:
     """
 ```
 
-**Key Methods:**
-
-- `_generate_initial_rules(activity)`: Build prompt → LLM → Extract rules
-- `_refine_rules(activity, rules, feedback, attempt)`: Refinement prompt → LLM → Extract
-- `_evaluate_rules(domain, activity, rules)`: Call SimLP with feedback generation
-- `_should_continue(iteration, eval, history)`: Check convergence criteria
-- `_record_iteration(response, evaluation)`: Track state and metrics
-- `_extract_rules_from_response(response)`: Parse Prolog rules from LLM output
-- `_build_final_result(reason)`: Calculate statistics and identify best iteration
-
 **Convergence Criteria:**
 1. Similarity score >= threshold (configurable, default 0.9)
 2. Maximum iterations reached (configurable, default 5)
@@ -130,54 +95,8 @@ def run(domain: str, activity: str) -> FinalResult:
 - Improvement rate (improvement / iterations)
 - Best iteration number and score
 
-
-## File Organization
-
-```
-feedback-loop/
-├── src/
-│   ├── core/
-│   │   ├── models.py          # Pydantic models for all data structures
-│   │   ├── rule_kb.py         # 🆕 Memory Module (RuleKB) implementation
-│   │   
-│   ├── prompts/
-│   │   ├── builder.py         # Prompt builder classes (with context injection)
-│   │   ├── rtec_base.py       # Core RTEC prompts
-│   │   ├── msa_domain.py      # MSA domain knowledge
-│   │   ├── msa_examples.py    # MSA examples
-│   │   ├── msa_requests.py    # MSA activity descriptions
-│   │   ├── har_domain.py      # HAR domain knowledge
-│   │   ├── har_examples.py    # HAR examples
-│   │   └── har_requests.py    # HAR activity descriptions
-│   ├── llm/
-│   │   ├── provider_base.py   # Abstract provider interface
-│   │   ├── provider_openai.py # OpenAI implementation
-│   │   └── factory.py         # Provider factory
-│   ├── loop/
-│   │   ├── orchestrator.py    # Feedback loop orchestration (with memory integration)
-│   │   └── logging_config.py  # Logging configuration
-│   ├── simlp/
-│   │   └── client.py          # SimLP evaluation client
-│   └── cli/
-│       └── main.py            # Command-line interface
-├── tests/
-│   ├── test_models.py         # Core model tests
-│   ├── test_prompts.py        # RTEC prompt tests
-│   ├── test_loop_orchestrator.py # Orchestrator tests (27 tests)
-│   ├── test_llm_provider.py   # Provider tests
-│   ├── test_rule_kb.py        # 🆕 Memory Module tests
-│   └── test_memory_integration.py # 🆕 End-to-end memory tests
-├── notebooks/
-│   └── feedback_loop_usage.ipynb # Tutorial notebook
-├── docs/
-│   ├── MEMORY_MODULE.md       # 🆕 Memory Module architecture and design
-│   └── LOGGING_GUIDE.md       # Comprehensive logging guide
-└── logs/                      # Auto-generated log files
-```
-
-**🆕 New Components for Memory Module:**
+**Components for Memory Module:**
 - `src/core/rule_kb.py`: RuleKB class for storing/retrieving learned fluents
 - `src/core/dependencies.py`: Static dependency graphs (MSA_DEPENDENCIES, HAR_DEPENDENCIES)
 - `docs/MEMORY_MODULE.md`: Complete design document and implementation guide
 - `tests/test_rule_kb.py`: Unit tests for RuleKB operations
-- `tests/test_memory_integration.py`: Integration tests for memory-enabled generation

@@ -14,40 +14,6 @@ In an LLM-based RTEC rule generation system:
 RuleMemory solves this by providing **external memory** that persists across LLM calls.
 
 ---
-
-## Architecture
-
-### Integration with Feedback Loop
-
-```mermaid
-sequenceDiagram
-    participant O as LoopOrchestrator
-    participant M as RuleMemory
-    participant PB as PromptBuilder
-    participant LLM as LLM Provider
-    participant E as Evaluator
-    
-    Note over O: Generate "gap" (simple fluent)
-    O->>PB: build_prompt("gap", prerequisites=[])
-    PB->>LLM: Generate gap rules
-    LLM-->>O: Generated rules
-    O->>E: Evaluate rules
-    E-->>O: score=0.95
-    O->>M: add_entry("gap", rules, score=0.95)
-    
-    Note over O: Generate "rendezVous" (composite fluent)
-    O->>M: get_formatted_rules(["gap", "lowSpeed", "stopped"])
-    M-->>O: Formatted prerequisite rules
-    O->>PB: build_prompt("rendezVous", prerequisites)
-    PB->>PB: Inject prerequisites into system prompt
-    PB->>LLM: Generate rendezVous rules with context
-    LLM-->>O: Generated rules (uses prerequisites)
-    O->>E: Evaluate rules
-    E-->>O: score=0.92
-    O->>M: add_entry("rendezVous", rules, score=0.92)
-    
-    Note over M: Memory now contains:<br/>gap, lowSpeed, stopped, rendezVous
-```
 ### Data Model
 ---
 ```mermaid

@@ -65,11 +65,8 @@ def test_evaluation_result_score_bounds():
         matches_reference=True,
         feedback="Rule matches reference except for variable naming.",
         reference_rule="holdsAt(fluent, T) :- initiatedAt(fluent, Ts), Ts < T.",
-        issues=["rename temporal variable"],
         metadata={"precision": 0.8},
     )
-
-    assert result.issues == ["rename temporal variable"]
     assert result.metadata["precision"] == pytest.approx(0.8)
 
     with pytest.raises(ValidationError):
@@ -145,49 +142,4 @@ def test_loop_state_requires_non_negative_iteration():
             evaluations=[],
             converged=False,
         )
-
-
-# def test_final_result_requires_non_empty_rules():
-#     config = LoopConfig(
-#         provider="openai",
-#         objective="maximize_precision",
-#         max_iterations=3,
-#         convergence_threshold=0.9,
-#         batch_size=2,
-#         retry_limit=2,
-#     )
-#     evaluation = EvaluationResult(
-#         rule_id="rule-final",
-#         score=0.81,
-#         matches_reference=True,
-#         feedback="Rule ready for deployment.",
-#     )
-#     state = LoopState(
-#         iteration=2,
-#         pending_requests=[],
-#         completed_requests=[],
-#         evaluations=[evaluation],
-#         converged=True,
-#         notes="Converged.",
-#     )
-
-#     final = FinalResult(
-#         config=config,
-#         states=[state],
-#         best_rules=["initiatedAt(moving(X), T) :- happensAt(startMoving(X), T)."],
-#         evaluations=[evaluation],
-#         summary={"precision": 0.92, "recall": 0.88},
-#     )
-
-#     assert final.summary["precision"] == pytest.approx(0.92)
-#     assert final.best_rules
-
-#     with pytest.raises(ValidationError):
-#         FinalResult(
-#             config=config,
-#             states=[state],
-#             best_rules=[],
-#             evaluations=[evaluation],
-#             summary={},
-#         )
 
