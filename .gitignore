@@ -7,7 +7,7 @@ __pycache__/
 /notebooks
 # C extensions
 *.so
-
+docs/SOFTWARE_DESIGN_BEST_PRACTICES.md
 # Distribution / packaging
 .Python
 build/
