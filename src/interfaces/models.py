@@ -25,5 +25,6 @@ class LLMRequest:
     model: Optional[str] = None
     system_prompt: Optional[str] = None
     domain_prompt: Optional[str] = None
+    feedback: Optional[str] = None
     fewshots: list[FewShotExample] = field(default_factory=list)
     extra: Dict[str, Any] = field(default_factory=dict)

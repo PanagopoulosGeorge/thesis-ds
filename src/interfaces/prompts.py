@@ -26,6 +26,7 @@ class PromptBuilder(ABC):
         self,
         activity_description: str,
         prerequisites: Optional[List[FewShotExample]] = None,
+        feedback: Optional[str] = None,
     ) -> LLMRequest:
         """Build a complete LLMRequest for generating RTEC rules.
         
@@ -43,6 +44,7 @@ class PromptBuilder(ABC):
             prompt=activity_description,
             system_prompt=system_prompt,
             fewshots=fewshots,
+            feedback=feedback,
         )
     
     def _build_fewshots(
