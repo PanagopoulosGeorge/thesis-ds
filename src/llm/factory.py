@@ -4,7 +4,7 @@ import os
 from typing import Any, Callable, Dict
 
 from src.interfaces.exceptions import LLMProviderNotFoundError
-from src.interfaces.llm_provider import LLMProvider
+from src.interfaces.llm import LLMProvider
 from src.llm import OpenAILLMProvider
 
 _PROVIDER_REGISTRY: Dict[str, Callable[..., LLMProvider]] = {}
@@ -16,5 +16,9 @@ def get_provider(provider_name: str) -> LLMProvider:
     provider_class = _PROVIDER_REGISTRY.get(provider_name)
     if not provider_class:
         raise LLMProviderNotFoundError(f"LLM provider {provider_name} not found")
+    return provider_class
 
+# ============================================================
+# Register LLM providers
+# ============================================================
 register_provider("openai", OpenAILLMProvider)

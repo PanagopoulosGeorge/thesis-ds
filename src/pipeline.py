@@ -2,9 +2,10 @@
 import asyncio
 from typing import Callable, Optional, Any
 from src.prompts.factory import get_prompt_builder
-from src.llm.openai import OpenAILLMProvider
+from src.llm.factory import get_provider
+from src.llm import OpenAILLMProvider
 from src.interfaces.models import LLMRequest, FewShotExample, LLMConfig
-
+from src.prompts.msa_requests import msa_requests
 class PromptRun:
     def __init__(self, builder, provider):
         self.builder = builder
@@ -21,26 +22,24 @@ class PromptRun:
         )
         return self
 
-    def generate(self):
+    def prompt(self):
         if not self.request:
             raise ValueError("Call build() before generate().")
-        # run the async provider synchronously
-        self.output = asyncio.run(self.provider._call_provider(self.request, self.provider._build_prompt(self.request)))
-        return self
-
-    def evaluate(self, scorer: Callable[[str], Any]):
-        if self.output is None:
-            raise ValueError("Call generate() before evaluate().")
-        self.evaluation = scorer(self.output)
+        self.output = self.provider.generate(self.request)        
         return self
 
 # Example use
+from dotenv import load_dotenv
+import os
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
+
 builder = get_prompt_builder("msa")
-config = LLMConfig(provider="openai", api_key="sk-...", model="gpt-4o")
-provider = OpenAILLMProvider(config)
+config = LLMConfig(provider="openai", api_key=api_key, extra={"model":"gpt-4o"})
+provider_class = get_provider("openai")
+provider = provider_class(config)
 
 run = PromptRun(builder, provider) \
-    .build("Generate gap rules") \
-    .generate() \
-    .evaluate(lambda out: {"length": len(out)})
-print(run.output, run.evaluation)
+    .build(msa_requests[0]) \
+    .prompt()
+print(run.output)

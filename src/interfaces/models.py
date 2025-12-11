@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 class LLMConfig:
     provider: str
     api_key: str
-    model: str
+    model: Optional[str] = None
     temperature: float = 0.7
     max_tokens: int = 2048
     timeout: Optional[float] = None

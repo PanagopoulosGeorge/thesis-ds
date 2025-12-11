@@ -19,7 +19,7 @@ class LLMProvider(ABC):
         Unified method for building a complete prompt and calling the provider.
         """
         final_prompt = self._build_prompt(request)
-        return self._call_provider(request, final_prompt)
+        return self._call_provider(final_prompt)
 
     def _build_prompt(self, request: LLMRequest) -> str:
         """
