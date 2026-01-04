@@ -104,14 +104,12 @@ def set_style(style: Literal["dark", "latex"] = "dark") -> None:
         style: "dark" for presentation, "latex" for academic papers
     """
     if style == "latex":
-        # Try to enable LaTeX rendering if available
-        try:
-            plt.rcParams["text.usetex"] = True
-            plt.rcParams["text.latex.preamble"] = r"\usepackage{amsmath}"
-        except Exception:
-            # LaTeX not available, use mathtext
-            plt.rcParams["text.usetex"] = False
-            plt.rcParams["mathtext.fontset"] = "cm"  # Computer Modern
+        # Don't use actual LaTeX - use matplotlib's mathtext with CM fonts
+        # This provides LaTeX-like appearance without requiring LaTeX installation
+        plt.rcParams["text.usetex"] = False
+        plt.rcParams["mathtext.fontset"] = "cm"  # Computer Modern math
+        plt.rcParams["font.family"] = "serif"
+        plt.rcParams["font.serif"] = ["DejaVu Serif", "Times New Roman", "serif"]
         
         sns.set_theme(style="whitegrid", palette="colorblind")
     else:
@@ -364,6 +362,7 @@ def generate_all_plots(
     results: List[FinalResult],
     output_dir: Path,
     show: bool = False,
+    style: Literal["dark", "latex"] = "dark",
 ) -> List[Path]:
     """Generate all visualization plots and save to output directory.
     
@@ -371,27 +370,31 @@ def generate_all_plots(
         results: List of FinalResult from orchestrator
         output_dir: Directory to save plots
         show: Whether to display plots interactively
+        style: "dark" for presentation, "latex" for academic papers
         
     Returns:
         List of paths to generated plot files
     """
     output_dir.mkdir(parents=True, exist_ok=True)
     
+    # Use PDF for LaTeX, PNG for dark mode
+    ext = "pdf" if style == "latex" else "png"
+    
     generated_files = []
     
     # Progress plot
-    progress_path = output_dir / "iteration_progress.png"
-    plot_iteration_progress(results, progress_path, show=show)
+    progress_path = output_dir / f"iteration_progress.{ext}"
+    plot_iteration_progress(results, progress_path, show=show, style=style)
     generated_files.append(progress_path)
     
     # Summary bars
-    summary_path = output_dir / "summary_scores.png"
-    plot_summary_bars(results, summary_path, show=show)
+    summary_path = output_dir / f"summary_scores.{ext}"
+    plot_summary_bars(results, summary_path, show=show, style=style)
     generated_files.append(summary_path)
     
     # Improvement waterfall
-    improvement_path = output_dir / "improvement.png"
-    plot_improvement_waterfall(results, improvement_path, show=show)
+    improvement_path = output_dir / f"improvement.{ext}"
+    plot_improvement_waterfall(results, improvement_path, show=show, style=style)
     generated_files.append(improvement_path)
     
     return generated_files

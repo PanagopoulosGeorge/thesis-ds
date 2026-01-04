@@ -48,15 +48,6 @@ Integrates generation → evaluation → refinement cycles until similarity conv
 #### 2. A memory module enabling hierarchical prompting
 Stores validated fluent definitions and injects them into future prompts.
 
-#### 4. A modular architecture
-Separation of:
- * prompting
- * orchestration
- * evaluation
- * memory
- * provider interfaces
-#### 5. Empirical validation on Maritime Situational Awareness (MSA)
-Using real-world RTEC rule definitions as ground truth.
 
 ### System architecture
 The system follows a structured pipeline:
@@ -74,4 +65,4 @@ graph LR
 
 A more detailed technical description is provided in: [Architecture](./docs/ARCHITECTURE.md)
 
----
+Instructions on how to setup and run can be found here: [Instructions](./docs/setup.md)

@@ -65,7 +65,6 @@ sequenceDiagram
 The `LoopOrchestrator` implements Algorithm 1 from the thesis:
 
 ```python
-def run(domain: str, activity: str) -> FinalResult:
     """
     Algorithm Implementation:
     1. Generate initial rules using prompt builder + LLM
@@ -82,15 +81,3 @@ def run(domain: str, activity: str) -> FinalResult:
 **Convergence Criteria:**
 1. Similarity score >= threshold (configurable, default 0.9)
 2. Maximum iterations reached (configurable, default 5)
-
-**State Tracking:**
-- Each iteration creates a `LoopState` with requests, responses, evaluations
-- History preserved for analysis and debugging
-- Best rules tracked across all iterations (not necessarily the last one)
-
-**Statistics Calculated:**
-- Total/average tokens used
-- Total/average latency
-- Improvement (final - initial score)
-- Improvement rate (improvement / iterations)
-- Best iteration number and score

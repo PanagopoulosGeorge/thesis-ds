@@ -109,6 +109,11 @@ def run(
         "--show-plots",
         help="Display plots interactively (requires --visualize)",
     ),
+    latex: bool = typer.Option(
+        False,
+        "--latex",
+        help="Generate LaTeX-compatible plots (PDF, academic fonts)",
+    ),
 ):
     """Run the RTEC rule generation feedback loop.
     
@@ -116,6 +121,7 @@ def run(
         rtec-llm run --domain msa --provider openai --model gpt-4o
         rtec-llm run -d har -p openai -m gpt-4o-mini -i 3 -t 0.9
         rtec-llm run -d msa -o ./results --visualize
+        rtec-llm run -d msa -o ./results --visualize --latex
     """
     # Load environment variables
     load_dotenv()
@@ -243,8 +249,10 @@ def run(
             
             # Generate visualizations
             if visualize:
-                console.print("\n[bold]Generating visualizations...[/bold]")
-                plot_files = generate_all_plots(results, out_path, show=show_plots)
+                style = "latex" if latex else "dark"
+                style_label = "LaTeX (PDF)" if latex else "presentation (PNG)"
+                console.print(f"\n[bold]Generating {style_label} visualizations...[/bold]")
+                plot_files = generate_all_plots(results, out_path, show=show_plots, style=style)
                 for pf in plot_files:
                     console.print(f"  [green]✓[/green] {pf}")
                 
