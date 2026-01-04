@@ -195,7 +195,11 @@ msa_requests = [
                                 intersect_all([It, Itc], Ii),
                                 thresholds(trawlingTime, TrawlingTime),
                                 intDurGreater(Ii, TrawlingTime, I).
-            """.strip()
+            """.strip(),
+            "prerequisites": [
+                "trawlSpeed",
+                "trawlingMovement"
+            ]
         },      
         {
             'fluent_name': 'anchoredOrMoored',
@@ -225,7 +229,10 @@ msa_requests = [
                                 intersect_all([Ip, Its1, Its2], Ii),
                                 thresholds(tuggingTime, TuggingTime),
                                 intDurGreater(Ii, TuggingTime, I).   
-            """.strip()
+            """.strip(),
+            "prerequisites": [
+                "tuggingSpeed"
+            ]
         },
         {
             'fluent_name': 'sarMovement',
@@ -259,7 +266,10 @@ msa_requests = [
                                 holdsFor(withinArea(Vessel1, nearCoast)=true, Iw1),
                                 holdsFor(withinArea(Vessel2, nearCoast)=true, Iw2),
                                 relative_complement_all(Ii,[Iw1, Iw2], I).
-            """.strip()
+            """.strip(),
+            "prerequisites": [
+                "lowSpeed"
+            ]
         },
         {
             'fluent_name': 'drifting',
@@ -295,7 +305,11 @@ msa_requests = [
                                 holdsFor(sarMovement(Vessel)=true, Isc),
                                 intersect_all([Iss, Isc], Ii),
                                 intDurGreater(Ii, 3600, I).
-            """.strip()
+            """.strip(),
+            "prerequisites": [
+                "sarSpeed",
+                "sarMovement"
+            ]
         },
         {
             'fluent_name': 'loitering',
@@ -310,7 +324,11 @@ msa_requests = [
                                 relative_complement_all(Ils, [Inc,Iam], Ii),
                                 thresholds(loiteringTime, LoiteringTime),
                                 intDurGreater(Ii, LoiteringTime, I).
-            """.strip()
+            """.strip(),
+            "prerequisites": [
+                "lowSpeed",
+                "anchoredOrMoored"
+            ]
         }       
 ]
 

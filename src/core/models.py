@@ -95,7 +95,7 @@ class FinalResult:
         """Generate a human-readable summary of the result."""
         status = "✓ Converged" if self.converged else "✗ Did not converge"
         return (
-            f"=== {self.fluent_name} ({self.domain}) ===\n"
+            f"{10*"="} {self.fluent_name} ({self.domain}) {10*"="}\n"
             f"Status: {status}\n"
             f"Best Score: {self.best_score:.4f} (iteration {self.best_iteration})\n"
             f"Iterations: {len(self.iterations)}/{self.max_iterations}\n"
