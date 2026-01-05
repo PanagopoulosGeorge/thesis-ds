@@ -1,0 +1,99 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-05T22:03:36.093570",
+    "total_fluents": 3,
+    "converged_count": 1,
+    "domain": "har",
+    "provider": "openai",
+    "model": "gpt-4o",
+    "max_iterations": 3,
+    "convergence_threshold": 0.95
+  },
+  "summary": {
+    "average_score": 0.8502848424723425,
+    "average_iterations": 2.6666666666666665,
+    "total_duration_seconds": 34.433688
+  },
+  "results": [
+    {
+      "fluent_name": "leaving_object",
+      "domain": "har",
+      "best_score": 0.7352430555555556,
+      "best_iteration": 1,
+      "converged": false,
+      "convergence_threshold": 0.95,
+      "total_iterations": 3,
+      "initial_score": 0.7352430555555556,
+      "final_score": 0.7352430555555556,
+      "improvement": 0.0,
+      "duration_seconds": 10.867474,
+      "best_rules": "initiatedAt(leaving_object(Person, Object)=true, T) :-\n    happensAt(appear(Object), T),\n    holdsAt(close(Person, Object, DistanceThreshold)=true, T),\n    thresholds(leavingObject, DistanceThreshold).\n\nterminatedAt(leaving_object(Person, Object)=true, T) :-\n    happensAt(disappear(Object), T).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.7352430555555556
+        },
+        {
+          "iteration": 2,
+          "score": 0.7352430555555556
+        },
+        {
+          "iteration": 3,
+          "score": 0.7352430555555556
+        }
+      ]
+    },
+    {
+      "fluent_name": "moving",
+      "domain": "har",
+      "best_score": 0.9642857142857143,
+      "best_iteration": 2,
+      "converged": true,
+      "convergence_threshold": 0.95,
+      "total_iterations": 2,
+      "initial_score": 0.8556547619047619,
+      "final_score": 0.9642857142857143,
+      "improvement": 0.10863095238095244,
+      "duration_seconds": 7.995003,
+      "best_rules": "holdsFor(moving(Person1, Person2)=true, I) :-\n    holdsFor(walking(Person1)=true, I1),\n    holdsFor(walking(Person2)=true, I2),\n    intersect_all([I1, I2], I_inter),\n    holdsFor(close(Person1, Person2, MovingThreshold)=true, I_close),\n    intersect_all([I_inter, I_close], I),\n    thresholds(moving, MovingThreshold).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.8556547619047619
+        },
+        {
+          "iteration": 2,
+          "score": 0.9642857142857143
+        }
+      ]
+    },
+    {
+      "fluent_name": "fighting",
+      "domain": "har",
+      "best_score": 0.8513257575757576,
+      "best_iteration": 2,
+      "converged": false,
+      "convergence_threshold": 0.95,
+      "total_iterations": 3,
+      "initial_score": 0.5558712121212122,
+      "final_score": 0.7168560606060606,
+      "improvement": 0.1609848484848484,
+      "duration_seconds": 15.571211,
+      "best_rules": "holdsFor(fighting(Person1, Person2)=true, I) :-\n    holdsFor(close(Person1, Person2, FightingThreshold)=true, I_close),\n    holdsFor(abrupt(Person1)=true, I_abr1),\n    holdsFor(abrupt(Person2)=true, I_abr2),\n    union_all([I_abr1, I_abr2], I_abr),\n    intersect_all([I_close, I_abr], I_abr_close),\n    holdsFor(inactive(Person1)=true, I_inact1),\n    holdsFor(inactive(Person2)=true, I_inact2),\n    union_all([I_inact1, I_inact2], I_inact),\n    relative_complement_all(I_abr_close, [I_inact], I).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.5558712121212122
+        },
+        {
+          "iteration": 2,
+          "score": 0.8513257575757576
+        },
+        {
+          "iteration": 3,
+          "score": 0.7168560606060606
+        }
+      ]
+    }
+  ]
+}

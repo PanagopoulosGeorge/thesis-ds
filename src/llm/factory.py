@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict
 from src.interfaces.exceptions import LLMProviderNotFoundError
 from src.interfaces.llm import LLMProvider
 from src.llm import OpenAILLMProvider
+from src.llm.ollama_client import OllamaLLMProvider
 
 _PROVIDER_REGISTRY: Dict[str, Callable[..., LLMProvider]] = {}
 
@@ -22,3 +23,4 @@ def get_provider(provider_name: str) -> LLMProvider:
 # Register LLM providers
 # ============================================================
 register_provider("openai", OpenAILLMProvider)
+register_provider("ollama", OllamaLLMProvider)

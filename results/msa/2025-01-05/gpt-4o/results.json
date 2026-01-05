@@ -1,0 +1,443 @@
+{
+  "metadata": {
+    "generated_at": "2026-01-05T21:37:15.021171",
+    "total_fluents": 17,
+    "converged_count": 9,
+    "domain": "msa",
+    "provider": "openai",
+    "model": "gpt-4o",
+    "max_iterations": 3,
+    "convergence_threshold": 0.95
+  },
+  "summary": {
+    "average_score": 0.8395528176548397,
+    "average_iterations": 2.235294117647059,
+    "total_duration_seconds": 363.924369
+  },
+  "results": [
+    {
+      "fluent_name": "gap",
+      "domain": "msa",
+      "best_score": 1.0,
+      "best_iteration": 1,
+      "converged": true,
+      "convergence_threshold": 0.95,
+      "total_iterations": 1,
+      "initial_score": 1.0,
+      "final_score": 1.0,
+      "improvement": 0.0,
+      "duration_seconds": 10.975697,
+      "best_rules": "initiatedAt(gap(Vessel)=nearPorts, T) :-\n    happensAt(gap_start(Vessel), T),\n    holdsAt(withinArea(Vessel, nearPorts)=true, T).\n\ninitiatedAt(gap(Vessel)=farFromPorts, T) :-\n    happensAt(gap_start(Vessel), T),\n    not holdsAt(withinArea(Vessel, nearPorts)=true, T).\n\nterminatedAt(gap(Vessel)=_Status, T) :-\n    happensAt(gap_end(Vessel), T).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "fluent_name": "highSpeedNearCoast",
+      "domain": "msa",
+      "best_score": 0.7510416666666666,
+      "best_iteration": 1,
+      "converged": false,
+      "convergence_threshold": 0.95,
+      "total_iterations": 3,
+      "initial_score": 0.7510416666666666,
+      "final_score": 0.7510416666666666,
+      "improvement": 0.0,
+      "duration_seconds": 20.788394,
+      "best_rules": "initiatedAt(highSpeedNearCoast(Vessel)=true, T) :-\n    holdsAt(withinArea(Vessel, nearCoast)=true, T),\n    happensAt(velocity(Vessel, Speed, _CourseOverGround, _TrueHeading), T),\n    thresholds(hcNearCoastMax, HcNearCoastMax),\n    Speed > HcNearCoastMax.\n\nterminatedAt(highSpeedNearCoast(Vessel)=true, T) :-\n    holdsAt(withinArea(Vessel, nearCoast)=true, T),\n    happensAt(velocity(Vessel, Speed, _CourseOverGround, _TrueHeading), T),\n    thresholds(hcNearCoastMax, HcNearCoastMax),\n    Speed =< HcNearCoastMax.\n\nterminatedAt(highSpeedNearCoast(Vessel)=true, T) :-\n    happensAt(leavesArea(Vessel, Area), T),\n    areaType(Area, nearCoast).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.7510416666666666
+        },
+        {
+          "iteration": 2,
+          "score": 0.7510416666666666
+        },
+        {
+          "iteration": 3,
+          "score": 0.7510416666666666
+        }
+      ]
+    },
+    {
+      "fluent_name": "trawlSpeed",
+      "domain": "msa",
+      "best_score": 0.405859375,
+      "best_iteration": 1,
+      "converged": false,
+      "convergence_threshold": 0.95,
+      "total_iterations": 3,
+      "initial_score": 0.405859375,
+      "final_score": 0.37825520833333337,
+      "improvement": -0.027604166666666652,
+      "duration_seconds": 23.763626,
+      "best_rules": "initiatedAt(trawlSpeed(Vessel)=true, T) :-\n    happensAt(entersArea(Vessel, Area), T),\n    areaType(Area, fishing),\n    happensAt(velocity(Vessel, Speed, _, _), T),\n    thresholds(trawlspeedMin, TrawlspeedMin),\n    thresholds(trawlspeedMax, TrawlspeedMax),\n    Speed >= TrawlspeedMin,\n    Speed =< TrawlspeedMax.\n\nterminatedAt(trawlSpeed(Vessel)=true, T) :-\n    happensAt(velocity(Vessel, Speed, _, _), T),\n    thresholds(trawlspeedMin, TrawlspeedMin),\n    thresholds(trawlspeedMax, TrawlspeedMax),\n    (Speed < TrawlspeedMin; Speed > TrawlspeedMax).\n\nterminatedAt(trawlSpeed(Vessel)=true, T) :-\n    happensAt(gap_start(Vessel), T).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.405859375
+        },
+        {
+          "iteration": 2,
+          "score": 0.405859375
+        },
+        {
+          "iteration": 3,
+          "score": 0.37825520833333337
+        }
+      ]
+    },
+    {
+      "fluent_name": "trawlingMovement",
+      "domain": "msa",
+      "best_score": 0.7864583333333334,
+      "best_iteration": 2,
+      "converged": false,
+      "convergence_threshold": 0.95,
+      "total_iterations": 3,
+      "initial_score": 0.7838541666666667,
+      "final_score": 0.7864583333333334,
+      "improvement": 0.0026041666666666297,
+      "duration_seconds": 11.120494,
+      "best_rules": "initiatedAt(trawlingMovement(Vessel)=true, T) :- \n    happensAt(change_in_heading(Vessel), T),\n    holdsAt(withinArea(Vessel, fishing)=true, T).\n\nterminatedAt(trawlingMovement(Vessel)=true, T) :- \n    happensAt(leavesArea(Vessel, Area), T),\n    areaType(Area, fishing).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.7838541666666667
+        },
+        {
+          "iteration": 2,
+          "score": 0.7864583333333334
+        },
+        {
+          "iteration": 3,
+          "score": 0.7864583333333334
+        }
+      ]
+    },
+    {
+      "fluent_name": "lowSpeed",
+      "domain": "msa",
+      "best_score": 1.0,
+      "best_iteration": 1,
+      "converged": true,
+      "convergence_threshold": 0.95,
+      "total_iterations": 1,
+      "initial_score": 1.0,
+      "final_score": 1.0,
+      "improvement": 0.0,
+      "duration_seconds": 3.702981,
+      "best_rules": "initiatedAt(lowSpeed(Vessel)=true, T) :-\n    happensAt(slow_motion_start(Vessel), T).\n\nterminatedAt(lowSpeed(Vessel)=true, T) :-\n    happensAt(slow_motion_end(Vessel), T).\n\nterminatedAt(lowSpeed(Vessel)=true, T) :-\n    happensAt(gap_start(Vessel), T).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "fluent_name": "tuggingSpeed",
+      "domain": "msa",
+      "best_score": 0.7822916666666667,
+      "best_iteration": 2,
+      "converged": false,
+      "convergence_threshold": 0.95,
+      "total_iterations": 3,
+      "initial_score": 0.5880208333333333,
+      "final_score": 0.7822916666666667,
+      "improvement": 0.1942708333333334,
+      "duration_seconds": 28.216399,
+      "best_rules": "initiatedAt(tuggingSpeed(Vessel)=true, T) :- \n    happensAt(velocity(Vessel, Speed, _, _), T),\n    thresholds(tuggingMin, TuggingMin),\n    thresholds(tuggingMax, TuggingMax),\n    Speed > TuggingMin,\n    Speed < TuggingMax.\n\nterminatedAt(tuggingSpeed(Vessel)=true, T) :- \n    happensAt(velocity(Vessel, Speed, _, _), T),\n    thresholds(tuggingMin, TuggingMin),\n    thresholds(tuggingMax, TuggingMax),\n    (Speed =< TuggingMin; Speed >= TuggingMax).\n\nterminatedAt(tuggingSpeed(Vessel)=true, T) :- \n    happensAt(gap_start(Vessel), T).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.5880208333333333
+        },
+        {
+          "iteration": 2,
+          "score": 0.7822916666666667
+        },
+        {
+          "iteration": 3,
+          "score": 0.7822916666666667
+        }
+      ]
+    },
+    {
+      "fluent_name": "sarSpeed",
+      "domain": "msa",
+      "best_score": 1.0,
+      "best_iteration": 3,
+      "converged": true,
+      "convergence_threshold": 0.95,
+      "total_iterations": 3,
+      "initial_score": 0.919921875,
+      "final_score": 1.0,
+      "improvement": 0.080078125,
+      "duration_seconds": 30.81302,
+      "best_rules": "initiatedAt(sarSpeed(Vessel)=true, T) :-\n    happensAt(velocity(Vessel, Speed, _, _), T),\n    thresholds(sarMinSpeed, SarMinSpeed),\n    Speed > SarMinSpeed.\n\nterminatedAt(sarSpeed(Vessel)=true, T) :-\n    happensAt(velocity(Vessel, Speed, _, _), T),\n    thresholds(sarMinSpeed, SarMinSpeed),\n    Speed < SarMinSpeed.\n\nterminatedAt(sarSpeed(Vessel)=true, T) :-\n    happensAt(gap_start(Vessel), T).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.919921875
+        },
+        {
+          "iteration": 2,
+          "score": 0.919921875
+        },
+        {
+          "iteration": 3,
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "fluent_name": "changingSpeed",
+      "domain": "msa",
+      "best_score": 0.9921875,
+      "best_iteration": 1,
+      "converged": true,
+      "convergence_threshold": 0.95,
+      "total_iterations": 1,
+      "initial_score": 0.9921875,
+      "final_score": 0.9921875,
+      "improvement": 0.0,
+      "duration_seconds": 9.782678,
+      "best_rules": "initiatedAt(changingSpeed(Vessel)=true, T) :-\n    happensAt(change_in_speed_start(Vessel), T).\n\nterminatedAt(changingSpeed(Vessel)=true, T) :-\n    happensAt(change_in_speed_end(Vessel), T).\n\nterminatedAt(changingSpeed(Vessel)=_Status, T) :-\n    happensAt(gap_start(Vessel), T).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.9921875
+        }
+      ]
+    },
+    {
+      "fluent_name": "movingSpeed",
+      "domain": "msa",
+      "best_score": 1.0,
+      "best_iteration": 3,
+      "converged": true,
+      "convergence_threshold": 0.95,
+      "total_iterations": 3,
+      "initial_score": 0.388671875,
+      "final_score": 1.0,
+      "improvement": 0.611328125,
+      "duration_seconds": 36.134394,
+      "best_rules": "initiatedAt(movingSpeed(Vessel)=below, T) :- \n       happensAt(velocity(Vessel,Speed,_,_), T),\n       vesselType(Vessel, Type),\n       typeSpeed(Type, Min, _, _),\n       thresholds(movingMin, MovingMin),\n       Speed < Min,\n       Speed > MovingMin.\n\ninitiatedAt(movingSpeed(Vessel)=normal, T) :- \n       happensAt(velocity(Vessel, Speed, _, _), T),\n       vesselType(Vessel, Type),\n       typeSpeed(Type, Min, Max, _),\n       Speed > Min,\n       Speed < Max.\n\ninitiatedAt(movingSpeed(Vessel)=above, T) :- \n       happensAt(velocity(Vessel, Speed, _, _), T),\n       vesselType(Vessel, Type),\n       typeSpeed(Type, _, Max, _),\n       Speed > Max.\n\nterminatedAt(movingSpeed(Vessel)=_, T) :- \n       happensAt(velocity(Vessel, Speed, _, _), T),\n       thresholds(movingMin, MovingMin),\n       Speed < MovingMin.\n\nterminatedAt(movingSpeed(Vessel)=_, T) :- \n       happensAt(gap_start(Vessel), T).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.388671875
+        },
+        {
+          "iteration": 2,
+          "score": 0.8823164682539683
+        },
+        {
+          "iteration": 3,
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "fluent_name": "trawling",
+      "domain": "msa",
+      "best_score": 0.7991071428571429,
+      "best_iteration": 3,
+      "converged": false,
+      "convergence_threshold": 0.95,
+      "total_iterations": 3,
+      "initial_score": 0.5085227272727273,
+      "final_score": 0.7991071428571429,
+      "improvement": 0.2905844155844156,
+      "duration_seconds": 33.675491,
+      "best_rules": "holdsFor(trawling(Vessel)=true, I) :-\n    holdsFor(trawlingMovement(Vessel)=true, I1),\n    holdsFor(withinArea(Vessel, fishing)=true, I2),\n    holdsFor(trawlSpeed(Vessel)=true, I3),\n    intersect_all([I1, I2, I3], Itemp),\n    thresholds(trawlingTime, TrawlingTime),\n    intDurGreater(Itemp, TrawlingTime, I).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.5085227272727273
+        },
+        {
+          "iteration": 2,
+          "score": 0.5085227272727273
+        },
+        {
+          "iteration": 3,
+          "score": 0.7991071428571429
+        }
+      ]
+    },
+    {
+      "fluent_name": "anchoredOrMoored",
+      "domain": "msa",
+      "best_score": 0.98046875,
+      "best_iteration": 2,
+      "converged": true,
+      "convergence_threshold": 0.95,
+      "total_iterations": 2,
+      "initial_score": 0.44140625,
+      "final_score": 0.98046875,
+      "improvement": 0.5390625,
+      "duration_seconds": 20.308642,
+      "best_rules": "holdsFor(anchoredOrMoored(Vessel)=true, I) :-\n    holdsFor(stopped(Vessel)=farFromPorts, I1),\n    holdsFor(withinArea(Vessel, anchorageArea)=true, I2),\n    intersect_all([I1, I2], I3),\n    \n    holdsFor(anchoredOrMoored(Vessel)=nearPorts, I4),\n    union_all([I3, I4], I5),\n    \n    thresholds(aOrMTime, AOrMTime),\n    intDurGreater(I5, AOrMTime, I).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.44140625
+        },
+        {
+          "iteration": 2,
+          "score": 0.98046875
+        }
+      ]
+    },
+    {
+      "fluent_name": "tugging",
+      "domain": "msa",
+      "best_score": 0.4955357142857143,
+      "best_iteration": 1,
+      "converged": false,
+      "convergence_threshold": 0.95,
+      "total_iterations": 3,
+      "initial_score": 0.4955357142857143,
+      "final_score": 0.4955357142857143,
+      "improvement": 0.0,
+      "duration_seconds": 38.543588,
+      "best_rules": "holdsFor(tugging(Vessel1, Vessel2)=true, I) :-\n    holdsFor(proximity(Vessel1, Vessel2)=true, Ip),\n    oneIsTug(Vessel1, Vessel2),\n    thresholds(tuggingMin, TuggingMin),\n    thresholds(tuggingMax, TuggingMax),\n    thresholds(tuggingTime, TuggingTime),\n    holdsFor(velocity(Vessel1, Speed1, _, _), Iv1),\n    Speed1 > TuggingMin,\n    Speed1 < TuggingMax,\n    holdsFor(velocity(Vessel2, Speed2, _, _), Iv2),\n    Speed2 > TuggingMin,\n    Speed2 < TuggingMax,\n    intersect_all([Ip, Iv1, Iv2], If),\n    intDurGreater(If, TuggingTime, I).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.4955357142857143
+        },
+        {
+          "iteration": 2,
+          "score": 0.4955357142857143
+        },
+        {
+          "iteration": 3,
+          "score": 0.4955357142857143
+        }
+      ]
+    },
+    {
+      "fluent_name": "sarMovement",
+      "domain": "msa",
+      "best_score": 1.0,
+      "best_iteration": 1,
+      "converged": true,
+      "convergence_threshold": 0.95,
+      "total_iterations": 1,
+      "initial_score": 1.0,
+      "final_score": 1.0,
+      "improvement": 0.0,
+      "duration_seconds": 7.378901,
+      "best_rules": "initiatedAt(sarMovement(Vessel)=true, T) :-\n    happensAt(change_in_speed_start(Vessel), T).\n    \ninitiatedAt(sarMovement(Vessel)=true, T) :-\n    happensAt(change_in_heading(Vessel), T).\n    \nterminatedAt(sarMovement(Vessel)=true, T) :-\n    happensAt(gap_start(Vessel), T).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "fluent_name": "pilotOps",
+      "domain": "msa",
+      "best_score": 1.0,
+      "best_iteration": 1,
+      "converged": true,
+      "convergence_threshold": 0.95,
+      "total_iterations": 1,
+      "initial_score": 1.0,
+      "final_score": 1.0,
+      "improvement": 0.0,
+      "duration_seconds": 12.609507,
+      "best_rules": "holdsFor(pilotOps(Vessel1, Vessel2)=true, I) :-\n    holdsFor(proximity(Vessel1, Vessel2)=true, Ip),\n    oneIsPilot(Vessel1, Vessel2),\n    holdsFor(lowSpeed(Vessel1)=true, Il1),\n    holdsFor(lowSpeed(Vessel2)=true, Il2),\n    holdsFor(stopped(Vessel1)=farFromPorts, Is1),\n    holdsFor(stopped(Vessel2)=farFromPorts, Is2),\n    union_all([Il1, Is1], I1b),\n    union_all([Il2, Is2], I2b),\n    intersect_all([I1b, I2b, Ip], If), If\\=[],\n    holdsFor(withinArea(Vessel1, nearCoast)=true, Iw1),\n    holdsFor(withinArea(Vessel2, nearCoast)=true, Iw2),\n    relative_complement_all(If, [Iw1, Iw2], I).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "fluent_name": "drifting",
+      "domain": "msa",
+      "best_score": 0.5794477513227514,
+      "best_iteration": 3,
+      "converged": false,
+      "convergence_threshold": 0.95,
+      "total_iterations": 3,
+      "initial_score": 0.4125744047619048,
+      "final_score": 0.5794477513227514,
+      "improvement": 0.16687334656084657,
+      "duration_seconds": 32.044483,
+      "best_rules": "initiatedAt(drifting(Vessel)=true, T) :-\n    happensAt(velocity(Vessel, Speed, CourseOverGround, TrueHeading), T),\n    thresholds(adriftAngThr, AdriftAngThr),\n    not (TrueHeading =:= 511.0),\n    absoluteAngleDiff(CourseOverGround, TrueHeading, AngleDiff),\n    AngleDiff > AdriftAngThr.\n\nterminatedAt(drifting(Vessel)=true, T) :-\n    happensAt(velocity(Vessel, Speed, CourseOverGround, TrueHeading), T),\n    thresholds(adriftAngThr, AdriftAngThr),\n    not (TrueHeading =:= 511.0),\n    absoluteAngleDiff(CourseOverGround, TrueHeading, AngleDiff),\n    AngleDiff =< AdriftAngThr.\n\nterminatedAt(drifting(Vessel)=true, T) :-\n    happensAt(stop_start(Vessel), T).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.4125744047619048
+        },
+        {
+          "iteration": 2,
+          "score": 0.5505125661375663
+        },
+        {
+          "iteration": 3,
+          "score": 0.5794477513227514
+        }
+      ]
+    },
+    {
+      "fluent_name": "inSAR",
+      "domain": "msa",
+      "best_score": 0.7,
+      "best_iteration": 1,
+      "converged": false,
+      "convergence_threshold": 0.95,
+      "total_iterations": 3,
+      "initial_score": 0.7,
+      "final_score": 0.7,
+      "improvement": 0.0,
+      "duration_seconds": 31.045705,
+      "best_rules": "holdsFor(inSAR(Vessel)=true, I) :-\n    holdsFor(sarSpeed(Vessel)=true, I1),\n    holdsFor(sarMovement(Vessel)=true, I2),\n    intersect_all([I1, I2], I).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 0.7
+        },
+        {
+          "iteration": 2,
+          "score": 0.7
+        },
+        {
+          "iteration": 3,
+          "score": 0.7
+        }
+      ]
+    },
+    {
+      "fluent_name": "loitering",
+      "domain": "msa",
+      "best_score": 1.0,
+      "best_iteration": 1,
+      "converged": true,
+      "convergence_threshold": 0.95,
+      "total_iterations": 1,
+      "initial_score": 1.0,
+      "final_score": 1.0,
+      "improvement": 0.0,
+      "duration_seconds": 13.020369,
+      "best_rules": "holdsFor(loitering(Vessel)=true, I) :-\n    holdsFor(lowSpeed(Vessel)=true, I1),\n    holdsFor(stopped(Vessel)=farFromPorts, I2),\n    union_all([I1, I2], I3),\n    \n    holdsFor(withinArea(Vessel, nearCoast)=true, I4),\n    holdsFor(anchoredOrMoored(Vessel)=true, I5),\n    relative_complement_all(I3, [I4, I5], I6),\n    \n    thresholds(loiteringTime, LoiteringTime),\n    intDurGreater(I6, LoiteringTime, I).",
+      "iteration_history": [
+        {
+          "iteration": 1,
+          "score": 1.0
+        }
+      ]
+    }
+  ]
+}

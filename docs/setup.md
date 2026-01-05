@@ -23,8 +23,8 @@ This document is the **single source of truth** for how to:
 If you already have the repo, skip this.
 
 ```bash
-git clone <YOUR_REPO_URL>
-cd thesis-ds-repo
+git clone https://github.com/PanagopoulosGeorge/thesis-ds.git
+cd thesis-ds
 ```
 
 ---

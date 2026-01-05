@@ -10,7 +10,7 @@ Implements Algorithm 1 from the thesis:
      d. Check convergence (score >= threshold)
 4. Return best rules and statistics
 """
-
+import time
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 
@@ -295,7 +295,7 @@ class LoopOrchestrator:
                 f"Processing fluent {i}/{len(fluent_configs)}",
                 fluent_name=config["fluent_name"],
             )
-            
+            time.sleep(0.5)
             result = self.run(
                 fluent_name=config["fluent_name"],
                 activity_description=config["activity_description"],
