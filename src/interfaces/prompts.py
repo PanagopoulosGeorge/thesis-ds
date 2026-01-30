@@ -58,7 +58,9 @@ class PromptBuilder(ABC):
         fewshots: List[FewShotExample] = []
         
         # 1. Domain examples (teach the LLM how to write rules)
-        fewshots.extend(self.get_fewshot_examples())
+        examples = self.get_fewshot_examples()
+        if examples:
+            fewshots.extend(examples)
         
         # 2. Prerequisites (previously learned fluents from RuleMemory)
         if prerequisites:

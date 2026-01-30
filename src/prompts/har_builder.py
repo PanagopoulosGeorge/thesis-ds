@@ -5,8 +5,6 @@ from src.interfaces.models import FewShotExample
 from src.interfaces.prompts import PromptBuilder
 from src.prompts.rtec_base import basic_system_messages, example_system_messages
 from src.prompts.har_domain import har_system_messages
-from src.prompts.har_examples import har_examples
-
 
 class HARPromptBuilder(PromptBuilder):
     """Prompt builder for Human Activity Recognition domain.
@@ -29,14 +27,5 @@ class HARPromptBuilder(PromptBuilder):
         return "\n\n".join(parts)
     
     def get_fewshot_examples(self) -> List[FewShotExample]:
-        """Return HAR few-shot examples."""
-        examples: List[FewShotExample] = []
-        
-        for ex in har_examples:
-            examples.append(FewShotExample(
-                user=ex["input"].strip(),
-                assistant=ex["output"].strip()
-            ))
-        
-        return examples
+        return []
 
