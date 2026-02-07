@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 @dataclass
 class IterationResult:
     """Result of a single iteration in the feedback loop.
-    
+
     Captures the generated rules, evaluation, and metadata for one iteration.
     """
     iteration: int
@@ -20,10 +20,14 @@ class IterationResult:
     feedback: Optional[str] = None
     prompt_used: Optional[str] = None
     timestamp: datetime = field(default_factory=datetime.utcnow)
-    
+
     # Optional detailed metrics from SimLP
     optimal_matching: Optional[Any] = None
     distances: Optional[Any] = None
+
+    # Optional self-consistency metrics
+    sc_confidence: Optional[float] = None
+    sc_num_samples: Optional[int] = None
     
     @property
     def is_perfect(self) -> bool:
@@ -108,19 +112,24 @@ class FinalResult:
 @dataclass
 class OrchestratorConfig:
     """Configuration for the LoopOrchestrator.
-    
+
     Controls convergence criteria and iteration limits.
     """
     max_iterations: int = 5
     convergence_threshold: float = 0.9
-    
+
+    # Self-consistency parameters
+    use_self_consistency: bool = False
+    sc_num_samples: int = 5
+    sc_temperature: float = 0.7
+
     # Whether to stop early when score starts decreasing
     early_stopping: bool = False
     early_stopping_patience: int = 2
-    
+
     # Logging verbosity
     verbose: bool = True
-    
+
     def __post_init__(self):
         if not (0.0 <= self.convergence_threshold <= 1.0):
             raise ValueError(
@@ -130,5 +139,16 @@ class OrchestratorConfig:
         if self.max_iterations < 1:
             raise ValueError(
                 f"max_iterations must be at least 1, got {self.max_iterations}"
+            )
+
+        # Self-consistency validation
+        if self.use_self_consistency and self.sc_num_samples < 1:
+            raise ValueError(
+                f"sc_num_samples must be >= 1 when use_self_consistency is enabled, "
+                f"got {self.sc_num_samples}"
+            )
+        if not (0.0 <= self.sc_temperature <= 2.0):
+            raise ValueError(
+                f"sc_temperature must be between 0.0 and 2.0, got {self.sc_temperature}"
             )
 

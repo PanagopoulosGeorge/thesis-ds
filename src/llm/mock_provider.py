@@ -48,8 +48,13 @@ class MockLLMProvider(LLMProvider):
         self._call_count = 0
         self._call_history: List[LLMRequest] = []
     
-    def _call_provider(self, final_prompt: str) -> str:
-        """Return the next predefined response."""
+    def _call_provider(self, request: LLMRequest, final_prompt: str) -> str:
+        """Return the next predefined response.
+        
+        Args:
+            request: The LLMRequest (not used, but required by interface)
+            final_prompt: The prompt (not used, but required by interface)
+        """
         # Cycle through responses
         response = self._responses[self._call_count % len(self._responses)]
         self._call_count += 1

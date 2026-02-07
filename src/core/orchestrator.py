@@ -147,11 +147,40 @@ class LoopOrchestrator:
                 feedback=current_feedback,
             )
             
-            # Step 2: Generate rules
-            raw_response = self.llm_provider.generate(request)
-            
-            # Step 2b: Extract Prolog code from LLM response
-            generated_rules = extract_rules_from_response(raw_response)
+            # Step 2: Generate rules (with optional self-consistency)
+            if self.config.use_self_consistency:
+                from src.core.self_consistency import generate_with_self_consistency
+
+                logger.info(
+                    "Using self-consistency generation",
+                    num_samples=self.config.sc_num_samples,
+                    temperature=self.config.sc_temperature,
+                )
+
+                sc_result = generate_with_self_consistency(
+                    request=request,
+                    llm_provider=self.llm_provider,
+                    num_samples=self.config.sc_num_samples,
+                    temperature=self.config.sc_temperature,
+                    feedback_client=self.feedback_client,
+                )
+
+                generated_rules = sc_result.best_candidate
+                sc_confidence = sc_result.confidence_score
+                sc_num_samples = sc_result.num_samples
+
+                logger.info(
+                    "Self-consistency result",
+                    confidence=f"{sc_confidence:.4f}",
+                    num_samples=sc_num_samples,
+                    unanimous=sc_result.is_unanimous,
+                )
+            else:
+                # Standard single generation
+                raw_response = self.llm_provider.generate(request)
+                generated_rules = extract_rules_from_response(raw_response)
+                sc_confidence = None
+                sc_num_samples = None
             
             if self.config.verbose:
                 logger.debug(
@@ -185,6 +214,8 @@ class LoopOrchestrator:
                 feedback=self.feedback_client.render_feedback(eval_result),
                 optimal_matching=eval_result.optimal_matching,
                 distances=eval_result.distances,
+                sc_confidence=sc_confidence,
+                sc_num_samples=sc_num_samples,
             )
             iterations.append(iteration_result)
             

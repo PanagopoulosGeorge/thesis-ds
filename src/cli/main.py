@@ -81,6 +81,27 @@ def run(
         min=0.0,
         max=1.0,
     ),
+    use_self_consistency: bool = typer.Option(
+        False,
+        "--self-consistency",
+        "-sc",
+        help="Enable self-consistency validation (generates N candidates, selects most consistent)",
+    ),
+    sc_num_samples: int = typer.Option(
+        5,
+        "--num-samples",
+        "-n",
+        help="Number of candidate samples for self-consistency (default: 5)",
+        min=1,
+        max=20,
+    ),
+    sc_temperature: float = typer.Option(
+        0.7,
+        "--sc-temperature",
+        help="Temperature for self-consistency sampling (default: 0.7, range: 0.0-2.0)",
+        min=0.0,
+        max=2.0,
+    ),
     api_key_name: str = typer.Option(
         "OPENAI_API_KEY",
         "--api-key-name",
@@ -136,6 +157,16 @@ def run(
         raise typer.Exit(code=1)
     
     # Display configuration
+    sc_config = ""
+    if use_self_consistency:
+        sc_config = (
+            f"Self-Consistency: [green]Enabled[/green]\n"
+            f"  ├─ Samples: [yellow]{sc_num_samples}[/yellow]\n"
+            f"  └─ Temperature: [yellow]{sc_temperature}[/yellow]\n"
+        )
+    else:
+        sc_config = "Self-Consistency: [green]Disabled[/green]\n"
+
     console.print(Panel.fit(
         f"[bold cyan]RTEC-LLM Rule Generation[/bold cyan]\n\n"
         f"Domain: [green]{domain}[/green]\n"
@@ -143,6 +174,7 @@ def run(
         f"Model: [green]{model}[/green]\n"
         f"Max Iterations: [green]{max_iterations}[/green]\n"
         f"Convergence Threshold: [green]{convergence_threshold}[/green]\n"
+        f"{sc_config}"
         f"API Key: [green]{api_key_name}[/green]",
         title="Configuration",
         border_style="cyan",
@@ -166,6 +198,9 @@ def run(
             max_iterations=max_iterations,
             convergence_threshold=convergence_threshold,
             verbose=verbose,
+            use_self_consistency=use_self_consistency,
+            sc_num_samples=sc_num_samples,
+            sc_temperature=sc_temperature,
         )
         
         orchestrator = LoopOrchestrator(
@@ -243,6 +278,9 @@ def run(
                     "model": model,
                     "max_iterations": max_iterations,
                     "convergence_threshold": convergence_threshold,
+                    "self_consistency": use_self_consistency,
+                    "sc_num_samples": sc_num_samples if use_self_consistency else None,
+                    "sc_temperature": sc_temperature if use_self_consistency else None,
                 },
             )
             console.print(f"\n[dim]Results saved to:[/dim] {json_path}")

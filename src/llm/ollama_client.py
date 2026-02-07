@@ -2,7 +2,7 @@
 
 from typing import Optional
 from src.interfaces.llm import LLMProvider
-from src.interfaces.models import LLMConfig
+from src.interfaces.models import LLMConfig, LLMRequest
 
 try:
     import ollama
@@ -49,33 +49,39 @@ class OllamaLLMProvider(LLMProvider):
         # Get model from config.extra (set by CLI via --model flag)
         self.model = config.extra.get("model", "llama3.2")
     
-    def _call_provider(self, final_prompt: str) -> str:
+    def _call_provider(self, request: LLMRequest, final_prompt: str) -> str:
         """Call Ollama to generate a response.
         
         Args:
+            request: The LLMRequest containing temperature and other parameters
             final_prompt: The structured prompt to send to the model.
             
         Returns:
             The model's response text.
         """
-        # Build options from config
+        # Build options from request (preferred) and config (fallback)
         options = {}
         
-        # Use temperature from config if set
-        if self.config.temperature is not None:
-            options["temperature"] = self.config.temperature
+        # Use temperature from request if provided, otherwise fall back to config
+        temperature = request.temperature if request.temperature is not None else self.config.temperature
+        if temperature is not None:
+            options["temperature"] = temperature
         
-        # Use max_tokens as num_predict (Ollama's equivalent)
-        if self.config.max_tokens is not None:
-            options["num_predict"] = self.config.max_tokens
+        # Use max_tokens from request if provided, otherwise from config
+        max_tokens = request.max_tokens if request.max_tokens is not None else self.config.max_tokens
+        if max_tokens is not None:
+            options["num_predict"] = max_tokens  # Ollama uses num_predict instead of max_tokens
         
         # Merge any additional options from config.extra
         extra_options = self.config.extra.get("options", {})
         options.update(extra_options)
         
+        # Use model from request if provided, otherwise from config
+        model = request.model if request.model is not None else self.model
+        
         # Call Ollama
         response = self.client.chat(
-            model=self.model,
+            model=model,
             messages=[{"role": "user", "content": final_prompt}],
             options=options if options else None,
         )

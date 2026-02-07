@@ -19,7 +19,7 @@ class LLMProvider(ABC):
         Unified method for building a complete prompt and calling the provider.
         """
         final_prompt = self._build_prompt(request)
-        return self._call_provider(final_prompt)
+        return self._call_provider(request, final_prompt)
 
     def _build_prompt(self, request: LLMRequest) -> str:
         """
@@ -57,5 +57,14 @@ class LLMProvider(ABC):
         return "\n\n".join(parts)
 
     @abstractmethod
-    async def _call_provider(self, request: LLMRequest, final_prompt: str) -> str:
+    def _call_provider(self, request: LLMRequest, final_prompt: str) -> str:
+        """Call the underlying LLM provider with the request and final prompt.
+        
+        Args:
+            request: The LLMRequest containing temperature, model, and other parameters
+            final_prompt: The fully constructed prompt string
+            
+        Returns:
+            The model's response text
+        """
         raise NotImplementedError

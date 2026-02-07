@@ -7,6 +7,10 @@ from src.core.models import (
     OrchestratorConfig,
 )
 from src.core.orchestrator import LoopOrchestrator
+from src.core.self_consistency import (
+    SelfConsistencyResult,
+    generate_with_self_consistency,
+)
 
 __all__ = [
     "FinalResult",
@@ -14,5 +18,7 @@ __all__ = [
     "LoopStatistics",
     "LoopOrchestrator",
     "OrchestratorConfig",
+    "SelfConsistencyResult",
+    "generate_with_self_consistency",
 ]
 
